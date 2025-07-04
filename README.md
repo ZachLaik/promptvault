@@ -8,7 +8,7 @@ The easiest way to use prompts with elegant syntax:
 
 ### Installation
 ```bash
-pip install git+https://github.com/your-username/promptvault.git
+pip install git+https://github.com/ZachLaik/promptvault.git
 ```
 
 ### Usage

@@ -432,7 +432,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Find user by email
       const targetUser = await storage.getUserByEmail(email);
       if (!targetUser) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({ 
+          message: `No user found with email ${email}. The user must create an account first.` 
+        });
       }
 
       // Check if user is already a member

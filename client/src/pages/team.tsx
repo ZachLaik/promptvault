@@ -70,10 +70,11 @@ export default function TeamPage() {
         description: "Team member invited successfully",
       });
     },
-    onError: () => {
+    onError: (error: any) => {
+      const message = error?.response?.data?.message || "Failed to invite team member";
       toast({
         title: "Error",
-        description: "Failed to invite team member",
+        description: message,
         variant: "destructive",
       });
     },
@@ -130,6 +131,24 @@ export default function TeamPage() {
         />
         
         <div className="p-6">
+          {/* Info Card */}
+          <Card className="bg-blue-50 border-blue-200 mb-6">
+            <CardContent className="p-4">
+              <div className="flex items-start">
+                <div className="h-6 w-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-0.5">
+                  <Users className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-blue-900 mb-1">How Team Invitations Work</h3>
+                  <p className="text-sm text-blue-700">
+                    To invite someone to your project, they must first create an account using the same email address. 
+                    You can share the login page link with them, then invite them once they've signed up.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Project Selector */}
           <Card className="mb-6">
             <CardContent className="p-6">
@@ -269,7 +288,7 @@ export default function TeamPage() {
                   className="mt-1"
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  The user must have an existing account
+                  The user must have an existing account. They need to sign up first at the login page.
                 </p>
                 {form.formState.errors.email && (
                   <p className="text-sm text-red-600 mt-1">

@@ -1,8 +1,43 @@
-# Python Integration Guide
+# Prompt Manager - Python Integration
 
-The easiest way for developers to include prompts in their Python code is through a simple HTTP request to your Prompt Manager API.
+This Prompt Manager provides multiple ways to integrate prompts into your Python applications. Choose the method that best fits your needs.
 
-## Quick Start (30 seconds)
+## Option 1: PromptVault SDK (Recommended)
+
+The easiest way to use prompts with elegant syntax:
+
+### Installation
+```bash
+pip install git+https://github.com/your-username/promptvault.git
+```
+
+### Usage
+```python
+import promptvault
+
+# Configure once
+promptvault.configure(
+    base_url="https://your-replit-url.replit.dev",
+    api_key="your_api_key"
+)
+
+# Use elegant dot notation
+prompt = promptvault.agents_lextenso.research_manager
+
+# That's it! Use the prompt content
+print(prompt)
+```
+
+### Features
+- ✅ **Elegant syntax**: `promptvault.project_name.prompt_name`
+- ✅ **One-time setup**: Configure once, use everywhere  
+- ✅ **Latest version**: Always get the most recent prompt
+- ✅ **Error handling**: Clear error messages
+- ✅ **Specific versions**: `promptvault.get_prompt("slug", "project", version=3)`
+
+## Option 2: Direct HTTP API (30 seconds)
+
+For developers who prefer direct API calls:
 
 ```python
 import requests
@@ -20,68 +55,96 @@ def get_prompt(slug, project_slug, api_key, base_url):
 prompt = get_prompt(
     slug="research-manager",
     project_slug="agents-lextenso", 
-    api_key="pk_752b437b3cfa01f9913a930c9734bcb600db30a1606fa291a3a67140b8be4978",
-    base_url="https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev"
+    api_key="your_api_key",
+    base_url="https://your-replit-url.replit.dev"
 )
 
 print(prompt)  # Your full prompt content ready to use
 ```
 
-## With OpenAI Integration
+## Real-World Examples
+
+### With PromptVault SDK + OpenAI
+
+```python
+import promptvault
+import openai
+
+# Setup
+promptvault.configure(
+    base_url="https://your-replit-url.replit.dev",
+    api_key="your_api_key"
+)
+openai.api_key = "your_openai_key"
+
+# Use elegant syntax directly
+system_prompt = promptvault.agents_lextenso.research_manager
+
+response = openai.ChatCompletion.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": "What are contract termination rules in French law?"}
+    ]
+)
+
+print(response.choices[0].message.content)
+```
+
+### With Direct HTTP API + OpenAI
 
 ```python
 import requests
 import openai
 
-class PromptManager:
-    def __init__(self, base_url, api_key):
-        self.base_url = base_url
-        self.api_key = api_key
-    
-    def get_prompt(self, slug, project_slug):
-        response = requests.get(
-            f"{self.base_url}/api/prompts/{slug}",
-            headers={"x-api-key": self.api_key},
-            params={"projectSlug": project_slug}
-        )
-        return response.json()["content"]
-
-# Initialize
-pm = PromptManager(
-    base_url="https://your-replit-url.replit.dev",
-    api_key="your_api_key"
-)
+def get_prompt(slug, project_slug, api_key, base_url):
+    response = requests.get(
+        f"{base_url}/api/prompts/{slug}",
+        headers={"x-api-key": api_key},
+        params={"projectSlug": project_slug}
+    )
+    return response.json()["content"]
 
 # Use with OpenAI
-def ask_legal_question(question):
-    system_prompt = pm.get_prompt("research-manager", "agents-lextenso")
-    
-    response = openai.ChatCompletion.create(
-        model="gpt-4",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": question}
-        ]
-    )
-    return response.choices[0].message.content
+system_prompt = get_prompt(
+    "research-manager", 
+    "agents-lextenso",
+    "your_api_key",
+    "https://your-replit-url.replit.dev"
+)
 
-# Example
-answer = ask_legal_question("What are the contract termination rules in French law?")
-print(answer)
+response = openai.ChatCompletion.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": "What are contract termination rules?"}
+    ]
+)
+
+print(response.choices[0].message.content)
 ```
 
-## Features Available
+## Getting Started
 
-- ✅ **Latest Version**: Always get the most recent prompt version
-- ✅ **Specific Versions**: Add `version=N` parameter for specific versions  
-- ✅ **Metadata**: Get title, author, creation date, and version info
-- ✅ **Caching**: Implement client-side caching for better performance
-- ✅ **Error Handling**: Proper HTTP status codes and error messages
+### Step 1: Get Your API Key
+1. Log into your Prompt Manager
+2. Go to API Keys section  
+3. Generate a new API key
 
-## Installation
+### Step 2: Choose Your Integration Method
+- **Recommended**: Use the PromptVault SDK for elegant syntax
+- **Alternative**: Use direct HTTP calls for more control
 
-```bash
-pip install requests openai  # or your preferred AI library
-```
+### Step 3: Start Using Prompts
+Both methods support:
+- ✅ **Latest Version**: Always get the most recent prompt
+- ✅ **Specific Versions**: Access any version with `version=N` 
+- ✅ **Error Handling**: Clear error messages and status codes
+- ✅ **Performance**: Built-in request optimization
 
-That's it! Your developers can now easily fetch and use your managed prompts in any Python application.
+## API Documentation
+
+For complete API reference and testing, visit your Prompt Manager's Swagger UI at:
+`https://your-replit-url.replit.dev/docs`
+
+Ready to get started? Choose Option 1 (PromptVault SDK) for the best developer experience!

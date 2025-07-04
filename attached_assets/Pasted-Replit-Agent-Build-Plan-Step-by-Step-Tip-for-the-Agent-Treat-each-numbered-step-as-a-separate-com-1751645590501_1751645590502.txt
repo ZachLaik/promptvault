@@ -1,0 +1,132 @@
+Replit Agent Build Plan (Step-by-Step)
+Tip for the Agent: Treat each numbered step as a separate commit with a clear message. Tests must pass before moving on.
+
+0 Bootstrap
+Scaffold repo
+
+bash
+Copy
+Edit
+/models      SQLAlchemy models
+/db          db.py + alembic (migrations)
+/api         main.py (FastAPI)
+/admin       app.py (Streamlit UI)
+schema.sql   one-shot DDL for local dev
+requirements.txt
+replit.nix   (if needed)
+README.md
+tests/
+Pin deps in requirements.txt
+
+css
+Copy
+Edit
+fastapi uvicorn[standard] sqlalchemy asyncpg
+pydantic passlib[bcrypt] python-dotenv
+streamlit httpx pytest
+Environment variables – add placeholders in .env.example
+
+ini
+Copy
+Edit
+DATABASE_URL=postgresql+asyncpg://...
+JWT_SECRET=change_me
+1 Database Layer
+Implement db/db.py with SQLAlchemy async engine + session maker.
+
+Translate the seven tables from the DDL (see blueprint) into SQLAlchemy models in /models/__init__.py.
+
+Provide Alembic migration or raw schema.sql.
+
+Write one pytest (tests/test_schema.py) that reflects tables and asserts they exist.
+
+2 Authentication & Users
+In api/auth.py build:
+
+/signup → email, password → hash with bcrypt → insert user.
+
+/login → JWT (HS256) cookie.
+
+/apikeys endpoints
+
+POST creates new key (returns plaintext once).
+
+DELETE revokes a key.
+
+3 Prompt CRUD & Version Endpoint
+/prompts resource:
+
+POST /prompts/{slug} → create or update (insert new version = max + 1).
+
+GET /prompts/{slug} → latest by default; ?version= to fetch older.
+
+Ensure role-based check: only project members may read; only editors/admins may write.
+
+4 Streamlit Admin UI
+Single page admin/app.py.
+
+After login (reuse /login), display:
+
+Project picker (projects the user belongs to).
+
+Prompt list (per project).
+
+Editor panel with current version in a st.text_area.
+
+Save button → POST /prompts/{slug}.
+
+History expander showing versions (st.expander + diff).
+
+5 Run & Deploy
+main.sh (root)
+
+bash
+Copy
+Edit
+uvicorn api.main:app --port 8000 --host 0.0.0.0 &
+streamlit run admin/app.py --server.port 8501 --server.address 0.0.0.0
+Update replit.metadata so the webview opens Streamlit by default but FastAPI docs are at /docs.
+
+6 Smoke Tests
+tests/test_flow.py
+
+Create user → project → prompt v1 → prompt v2.
+
+GET returns v2.
+
+Use Replit “unit-tests” runner; ensure pytest finishes <10 s.
+
+7 Docs & Demo
+README (one-pager):
+
+Quick-start (Run on Replit button link).
+
+Example curl snippet fetching a prompt.
+
+Diagram (copy ASCII from blueprint).
+
+Record a 20-second Loom/GIF showing edit in Streamlit and curl call.
+
+8 Polish
+Error handling: return 404/403/401 JSON with detail.
+
+Add CorsMiddleware for local testing.
+
+Update .gitignore (.env, __pycache__, .replit).
+
+Handoff Checklist (agent must tick all)
+ All steps committed & pushed.
+
+ Tests pass (pytest).
+
+ Streamlit UI reachable on Replit.
+
+ FastAPI docs reachable at /docs.
+
+ README + example curl included.
+
+ No plaintext secrets checked in.
+
+End-state: opening the Replit link spins up the workspace; within ~30 s you can visit /admin to edit a prompt and then curl -H "X-API-KEY: …" to retrieve the latest version.
+
+

@@ -121,7 +121,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const project = await storage.createProject({
-        ...data,
+        name: data.name,
+        slug: data.slug,
+        description: data.description,
         ownerId: req.user!.id,
       });
 
@@ -186,7 +188,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Prompt version routes - both session and API key auth
-  app.post("/api/prompts/:slug", [authenticateSession, authenticateApiKey], async (req: AuthenticatedRequest, res) => {
+  app.post("/api/prompts/:slug", async (req: AuthenticatedRequest, res) => {
+    // Try session auth first, then API key auth
+    try {
+      await authenticateSession(req, res, () => {});
+    } catch {
+      try {
+        await authenticateApiKey(req, res, () => {});
+      } catch {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+    }
     try {
       const { slug } = req.params;
       const { content, message, projectSlug } = req.body;
@@ -339,7 +351,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/api-keys", authenticateSession, async (req: AuthenticatedRequest, res) => {
     try {
-      const data = insertApiKeySchema.omit(["keyHash", "keyPrefix"]).parse(req.body);
+      const data = req.body;
       
       // Generate API key
       const keyValue = `pk_${crypto.randomBytes(32).toString("hex")}`;
@@ -347,7 +359,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const keyPrefix = keyValue.substring(0, 12);
 
       const apiKey = await storage.createApiKey({
-        ...data,
+        name: data.name,
+        description: data.description,
         userId: req.user!.id,
         keyHash,
         keyPrefix,

@@ -69,6 +69,7 @@ export const insertProjectSchema = createInsertSchema(projects).pick({
   name: true,
   description: true,
   slug: true,
+  ownerId: true,
 });
 
 export const insertProjectMemberSchema = createInsertSchema(projectMembers).pick({

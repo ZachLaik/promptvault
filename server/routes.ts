@@ -14,6 +14,21 @@ import {
   insertApiKeySchema,
 } from "@shared/schema";
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Authentication
+ *     description: User authentication and session management
+ *   - name: Projects
+ *     description: Project management operations
+ *   - name: Prompts
+ *     description: Prompt creation and versioning
+ *   - name: API Keys
+ *     description: API key management for programmatic access
+ *   - name: Team
+ *     description: Project member management
+ */
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Session configuration
   app.use(session({
@@ -28,6 +43,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
   }));
 
   // Auth routes
+  /**
+   * @swagger
+   * /api/auth/signup:
+   *   post:
+   *     summary: Create a new user account
+   *     tags: [Authentication]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/SignupRequest'
+   *     responses:
+   *       200:
+   *         description: User created successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/User'
+   *       400:
+   *         description: User already exists or validation error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
   app.post("/api/auth/signup", async (req, res) => {
     try {
       const data = signupSchema.parse(req.body);
@@ -60,6 +101,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  /**
+   * @swagger
+   * /api/auth/login:
+   *   post:
+   *     summary: Authenticate user and create session
+   *     tags: [Authentication]
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/LoginRequest'
+   *     responses:
+   *       200:
+   *         description: Login successful
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/User'
+   *       401:
+   *         description: Invalid credentials
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
   app.post("/api/auth/login", async (req, res) => {
     try {
       const data = loginSchema.parse(req.body);
@@ -101,6 +168,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Project routes
+  /**
+   * @swagger
+   * /api/projects:
+   *   get:
+   *     summary: Get all projects for authenticated user
+   *     tags: [Projects]
+   *     security:
+   *       - sessionAuth: []
+   *     responses:
+   *       200:
+   *         description: List of user projects
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: array
+   *               items:
+   *                 allOf:
+   *                   - $ref: '#/components/schemas/Project'
+   *                   - type: object
+   *                     properties:
+   *                       role:
+   *                         type: string
+   *                         enum: [admin, editor, viewer]
+   *       401:
+   *         description: Not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
   app.get("/api/projects", authenticateSession, async (req: AuthenticatedRequest, res) => {
     try {
       const projects = await storage.getProjectsForUser(req.user!.id);
@@ -188,6 +285,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Prompt version routes - both session and API key auth
+  /**
+   * @swagger
+   * /api/prompts/{slug}:
+   *   post:
+   *     summary: Create a new version of a prompt
+   *     tags: [Prompts]
+   *     security:
+   *       - sessionAuth: []
+   *       - apiKeyAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: slug
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Prompt slug identifier
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             allOf:
+   *               - $ref: '#/components/schemas/CreatePromptVersionRequest'
+   *               - type: object
+   *                 properties:
+   *                   projectSlug:
+   *                     type: string
+   *                     description: Project slug where prompt belongs
+   *                 required: [projectSlug]
+   *     responses:
+   *       200:
+   *         description: Prompt version created successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/PromptVersion'
+   *       401:
+   *         description: Authentication required
+   *       403:
+   *         description: Requires editor role or higher
+   *       404:
+   *         description: Project or prompt not found
+   */
   app.post("/api/prompts/:slug", async (req: AuthenticatedRequest, res) => {
     // Try session auth first, then API key auth
     try {

@@ -70,6 +70,48 @@ export async function authenticateApiKey(req: AuthenticatedRequest, res: Respons
   }
 }
 
+export async function authenticateEither(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+  try {
+    // Try session authentication first
+    if ((req.session as any)?.userId) {
+      const user = await storage.getUser((req.session as any).userId);
+      if (user) {
+        req.user = {
+          id: user.id,
+          username: user.username,
+          email: user.email,
+        };
+        return next();
+      }
+    }
+
+    // Try API key authentication
+    const apiKey = req.headers["x-api-key"] as string;
+    if (apiKey) {
+      const keyHash = crypto.createHash("sha256").update(apiKey).digest("hex");
+      const apiKeyRecord = await storage.getApiKeyByHash(keyHash);
+      
+      if (apiKeyRecord && apiKeyRecord.isActive) {
+        await storage.updateApiKey(apiKeyRecord.id, { lastUsedAt: new Date() });
+        const user = await storage.getUser(apiKeyRecord.userId);
+        
+        if (user) {
+          req.user = {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+          };
+          return next();
+        }
+      }
+    }
+
+    return res.status(401).json({ message: "Authentication required" });
+  } catch (error) {
+    res.status(500).json({ message: "Authentication error" });
+  }
+}
+
 export async function checkProjectAccess(
   req: AuthenticatedRequest,
   res: Response,

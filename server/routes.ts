@@ -4,7 +4,7 @@ import session from "express-session";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { storage } from "./storage";
-import { authenticateSession, authenticateApiKey, checkProjectAccess, type AuthenticatedRequest } from "./middleware/auth";
+import { authenticateSession, authenticateApiKey, authenticateEither, checkProjectAccess, type AuthenticatedRequest } from "./middleware/auth";
 import {
   loginSchema,
   signupSchema,
@@ -388,7 +388,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/prompts/:slug", [authenticateSession, authenticateApiKey], async (req: AuthenticatedRequest, res) => {
+  /**
+   * @swagger
+   * /api/prompts/{slug}:
+   *   get:
+   *     summary: Get a prompt and its content (latest or specific version)
+   *     tags: [Prompts]
+   *     security:
+   *       - sessionAuth: []
+   *       - apiKeyAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: slug
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Prompt slug identifier
+   *       - in: query
+   *         name: projectSlug
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Project slug where prompt belongs
+   *       - in: query
+   *         name: version
+   *         required: false
+   *         schema:
+   *           type: integer
+   *         description: Specific version number (defaults to latest)
+   *     responses:
+   *       200:
+   *         description: Prompt content retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 slug:
+   *                   type: string
+   *                 title:
+   *                   type: string
+   *                 category:
+   *                   type: string
+   *                 version:
+   *                   type: integer
+   *                 content:
+   *                   type: string
+   *                 message:
+   *                   type: string
+   *                 author:
+   *                   $ref: '#/components/schemas/User'
+   *                 createdAt:
+   *                   type: string
+   *                   format: date-time
+   *       400:
+   *         description: Project slug required
+   *       401:
+   *         description: Authentication required
+   *       403:
+   *         description: Access denied to this project
+   *       404:
+   *         description: Project, prompt, or version not found
+   */
+  app.get("/api/prompts/:slug", authenticateEither, async (req: AuthenticatedRequest, res) => {
     try {
       const { slug } = req.params;
       const { version, projectSlug } = req.query;

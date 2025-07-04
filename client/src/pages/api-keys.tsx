@@ -82,7 +82,6 @@ export default function ApiKeysPage() {
   });
 
   const form = useForm({
-    resolver: zodResolver(insertApiKeySchema.omit(["userId", "keyHash", "keyPrefix"])),
     defaultValues: {
       name: "",
       description: "",
@@ -241,7 +240,7 @@ export default function ApiKeysPage() {
               <Input
                 id="name"
                 placeholder="e.g., Production API"
-                {...form.register("name")}
+                {...form.register("name", { required: "Name is required" })}
                 className="mt-1"
               />
               {form.formState.errors.name && (

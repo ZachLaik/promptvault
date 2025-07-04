@@ -55,7 +55,6 @@ export default function NewPromptPage() {
   });
 
   const form = useForm({
-    resolver: zodResolver(insertPromptSchema.omit(["projectId"])),
     defaultValues: {
       slug: "",
       title: "",
@@ -134,7 +133,7 @@ export default function NewPromptPage() {
                     <Input
                       id="title"
                       placeholder="e.g., Customer Support Response"
-                      {...form.register("title")}
+                      {...form.register("title", { required: "Title is required" })}
                       onChange={handleTitleChange}
                       className="mt-1"
                     />
@@ -153,7 +152,7 @@ export default function NewPromptPage() {
                     <Input
                       id="slug"
                       placeholder="customer-support-response"
-                      {...form.register("slug")}
+                      {...form.register("slug", { required: "Slug is required" })}
                       className="mt-1"
                     />
                     <p className="text-xs text-gray-500 mt-1">

@@ -80,8 +80,8 @@ export default function TeamPage() {
   });
 
   const form = useForm({
-    resolver: zodResolver(insertProjectMemberSchema.omit(["projectId", "userId"])),
     defaultValues: {
+      email: "",
       role: "viewer",
     },
   });
@@ -265,7 +265,7 @@ export default function TeamPage() {
                   id="email"
                   type="email"
                   placeholder="user@example.com"
-                  {...form.register("email")}
+                  {...form.register("email", { required: "Email is required" })}
                   className="mt-1"
                 />
                 <p className="text-xs text-gray-500 mt-1">

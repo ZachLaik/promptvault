@@ -393,6 +393,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Project members routes
+  app.get("/api/projects/:projectId/members", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      if (isNaN(projectId)) {
+        return res.status(400).json({ message: "Invalid project ID" });
+      }
+
+      // Check if user has access to project
+      const member = await storage.getProjectMember(projectId, req.user!.id);
+      if (!member) {
+        return res.status(403).json({ message: "Access denied to this project" });
+      }
+
+      const members = await storage.getProjectMembers(projectId);
+      res.json(members);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch project members" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/members", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      if (isNaN(projectId)) {
+        return res.status(400).json({ message: "Invalid project ID" });
+      }
+
+      // Check if user is admin of the project
+      const member = await storage.getProjectMember(projectId, req.user!.id);
+      if (!member || member.role !== "admin") {
+        return res.status(403).json({ message: "Only project admins can invite members" });
+      }
+
+      const { email, role } = req.body;
+
+      // Find user by email
+      const targetUser = await storage.getUserByEmail(email);
+      if (!targetUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Check if user is already a member
+      const existingMember = await storage.getProjectMember(projectId, targetUser.id);
+      if (existingMember) {
+        return res.status(400).json({ message: "User is already a member of this project" });
+      }
+
+      const newMember = await storage.addProjectMember({
+        projectId,
+        userId: targetUser.id,
+        role,
+      });
+
+      res.json(newMember);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to invite member" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

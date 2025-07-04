@@ -124,6 +124,9 @@ This is a full-stack prompt management application built with React, Express.js,
 
 ## Changelog
 - July 04, 2025. Initial setup
+- July 04, 2025. Added Swagger UI at /docs endpoint for API testing
+- July 04, 2025. Fixed prompt versioning and content display issues  
+- July 04, 2025. Created Python SDK with elegant dot notation: `promptvault.project_name.prompt_name`
 
 ## User Preferences
 

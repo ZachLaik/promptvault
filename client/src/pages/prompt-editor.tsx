@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
 import { useForm } from "react-hook-form";
@@ -84,11 +84,11 @@ export default function PromptEditor() {
   });
 
   // Initialize content when latest version loads
-  useState(() => {
+  useEffect(() => {
     if (latestVersion && !currentContent) {
       setCurrentContent(latestVersion.content);
     }
-  });
+  }, [latestVersion, currentContent]);
 
   const handleSave = () => {
     if (!currentContent.trim()) {

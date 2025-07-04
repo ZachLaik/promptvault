@@ -16,7 +16,7 @@ const options = {
         description: 'Replit development server',
       },
       {
-        url: 'http://localhost:5000',
+        url: 'https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev',
         description: 'Local development server',
       },
     ],

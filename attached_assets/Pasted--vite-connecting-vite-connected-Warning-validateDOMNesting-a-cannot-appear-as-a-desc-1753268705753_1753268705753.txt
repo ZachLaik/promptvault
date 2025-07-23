@@ -1,0 +1,44 @@
+[vite] connecting...
+[vite] connected.
+Warning: validateDOMNesting(...): <a> cannot appear as a descendant of &lt;a&gt;.
+    at a
+    at a
+    at https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=3e8310f0:337:18
+    at nav
+    at div
+    at aside
+    at Sidebar (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/src/components/layout/sidebar.tsx:32:28)
+    at div
+    at Dashboard (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/src/pages/dashboard.tsx:43:55)
+    at ProtectedRoute (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/src/App.tsx?v=WhsBobxKZT-LjP8sSOxOe:33:27)
+    at Route (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=3e8310f0:323:16)
+    at Switch (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=3e8310f0:379:17)
+    at Router
+    at Provider (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-DGVC3TXM.js?v=3e8310f0:58:15)
+    at TooltipProvider (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=3e8310f0:56:5)
+    at AuthProvider (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/src/hooks/use-auth.tsx:22:32)
+    at QueryClientProvider (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=3e8310f0:2805:3)
+    at App
+at a
+at a
+at https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=3e8310f0:337:18
+at nav
+at div
+at aside
+at Sidebar (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/src/components/layout/sidebar.tsx:32:28)
+at div
+at Dashboard (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/src/pages/dashboard.tsx:43:55)
+at ProtectedRoute (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/src/App.tsx?v=WhsBobxKZT-LjP8sSOxOe:33:27)
+at Route (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=3e8310f0:323:16)
+at Switch (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=3e8310f0:379:17)
+at Router
+at Provider (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-DGVC3TXM.js?v=3e8310f0:58:15)
+at TooltipProvider (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=3e8310f0:56:5)
+at AuthProvider (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/src/hooks/use-auth.tsx:22:32)
+at QueryClientProvider (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=3e8310f0:2805:3)
+at App
+at t.value (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400
+Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.

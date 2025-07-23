@@ -117,7 +117,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-slate-50">
       <Sidebar />
-      
+
       <main className="ml-64 min-h-screen">
         <Header
           title="Dashboard"
@@ -127,7 +127,7 @@ export default function Dashboard() {
             onClick: () => setIsCreateDialogOpen(true),
           }}
         />
-        
+
         <div className="p-6">
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -144,7 +144,7 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
@@ -158,7 +158,7 @@ export default function Dashboard() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center">
@@ -173,7 +173,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
-          
+
           {/* Recent Projects */}
           <Card className="mb-8">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -184,7 +184,7 @@ export default function Dashboard() {
                 </Link>
               </div>
             </div>
-            
+
             {isLoading ? (
               <div className="p-6">
                 <p className="text-gray-500">Loading projects...</p>
@@ -192,6 +192,9 @@ export default function Dashboard() {
             ) : projects.length === 0 ? (
               <div className="p-6 text-center">
                 <p className="text-gray-500">No projects yet. Create your first project to get started.</p>
+                 <Button onClick={() => setIsCreateDialogOpen(true)}>
+                Create Your First Project
+              </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">
@@ -268,7 +271,7 @@ export default function Dashboard() {
                 </p>
               )}
             </div>
-            
+
             <div>
               <Label htmlFor="slug">Project Slug</Label>
               <Input
@@ -283,7 +286,7 @@ export default function Dashboard() {
                 </p>
               )}
             </div>
-            
+
             <div>
               <Label htmlFor="description">Description</Label>
               <Textarea
@@ -298,7 +301,7 @@ export default function Dashboard() {
                 </p>
               )}
             </div>
-            
+
             <div className="flex items-center justify-end space-x-3 pt-4">
               <Button
                 type="button"

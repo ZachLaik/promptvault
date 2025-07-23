@@ -7,7 +7,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -174,9 +174,9 @@ export default function ProjectsPage() {
                         5 members
                       </div>
                       <Link href={`/projects/${project.id}`}>
-                        <Button size="sm">
+                        <span className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-9 px-3 cursor-pointer">
                           Open Project
-                        </Button>
+                        </span>
                       </Link>
                     </div>
                   </CardContent>
@@ -192,6 +192,9 @@ export default function ProjectsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
+            <DialogDescription>
+              Create a new project to organize your prompts and collaborate with your team.
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div>

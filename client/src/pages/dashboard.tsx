@@ -7,7 +7,7 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -237,7 +237,9 @@ export default function Dashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <Link href={`/projects/${project.id}`}>
-                            <a className="text-primary hover:text-primary/80 mr-3">Open</a>
+                            <Button variant="link" className="text-primary hover:text-primary/80 mr-3 p-0 h-auto">
+                              Open
+                            </Button>
                           </Link>
                           <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600">
                             <MoreHorizontal className="h-4 w-4" />
@@ -258,7 +260,9 @@ export default function Dashboard() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
-            <p className="text-sm text-gray-600">Create a new project to organize your prompts and collaborate with your team.</p>
+            <DialogDescription>
+              Create a new project to organize your prompts and collaborate with your team.
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div>

@@ -2,8 +2,25 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setupSwagger } from "./swagger";
+import session from "express-session"; // Ensure express-session is installed: npm install express-session
 
 const app = express();
+
+// Add session middleware before other middleware
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "dev-secret-key",
+    resave: false,
+    saveUninitialized: false,
+    rolling: true, // Reset expiration on each request
+    cookie: { 
+      secure: false, 
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days in milliseconds
+    },
+  })
+);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -40,7 +57,7 @@ app.use((req, res, next) => {
 (async () => {
   // Setup Swagger UI
   setupSwagger(app);
-  
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {

@@ -68,6 +68,7 @@ export default function Dashboard() {
   });
 
   const onSubmit = (data: any) => {
+    console.log("Form submitted with data:", data);
     createProjectMutation.mutate(data);
   };
 
@@ -257,6 +258,7 @@ export default function Dashboard() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create New Project</DialogTitle>
+            <p className="text-sm text-gray-600">Create a new project to organize your prompts and collaborate with your team.</p>
           </DialogHeader>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div>

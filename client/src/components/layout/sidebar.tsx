@@ -39,14 +39,14 @@ export function Sidebar() {
           </div>
           <span className="font-semibold text-gray-900">Prompt Manager</span>
         </div>
-        
+
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-2">
           {navigation.map((item) => {
             const Icon = item.icon;
             return (
               <Link key={item.name} href={item.href}>
-                <a
+                <div
                   className={`flex items-center px-3 py-2 rounded-lg font-medium transition-colors ${
                     isActive(item.href)
                       ? "bg-primary/10 text-primary"
@@ -55,12 +55,12 @@ export function Sidebar() {
                 >
                   <Icon className="h-5 w-5 mr-3" />
                   {item.name}
-                </a>
+                </div>
               </Link>
             );
           })}
         </nav>
-        
+
         {/* User Menu */}
         <div className="border-t border-gray-200 p-4">
           <div className="flex items-center">

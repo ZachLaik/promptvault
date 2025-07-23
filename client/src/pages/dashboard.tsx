@@ -192,9 +192,12 @@ export default function Dashboard() {
             ) : projects.length === 0 ? (
               <div className="p-6 text-center">
                 <p className="text-gray-500">No projects yet. Create your first project to get started.</p>
-                 <Button onClick={() => setIsCreateDialogOpen(true)}>
-                Create Your First Project
-              </Button>
+                <Button 
+                  onClick={() => setIsCreateDialogOpen(true)}
+                  className="mt-4"
+                >
+                  Create Your First Project
+                </Button>
               </div>
             ) : (
               <div className="overflow-x-auto">

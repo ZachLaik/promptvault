@@ -59,7 +59,7 @@ export default function Dashboard() {
   });
 
   const form = useForm({
-    resolver: zodResolver(insertProjectSchema),
+    resolver: zodResolver(insertProjectSchema.omit({ ownerId: true })),
     defaultValues: {
       name: "",
       description: "",
@@ -69,6 +69,7 @@ export default function Dashboard() {
 
   const onSubmit = (data: any) => {
     console.log("Form submitted with data:", data);
+    console.log("Form errors:", form.formState.errors);
     createProjectMutation.mutate(data);
   };
 
@@ -322,6 +323,7 @@ export default function Dashboard() {
               <Button
                 type="submit"
                 disabled={createProjectMutation.isPending}
+                className="text-center font-bold"
               >
                 {createProjectMutation.isPending ? "Creating..." : "Create Project"}
               </Button>

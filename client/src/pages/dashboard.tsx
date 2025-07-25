@@ -237,7 +237,7 @@ export default function Dashboard() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <Link href={`/projects/${project.id}`}>
-                            <Button variant="link" className="text-primary hover:text-primary/80 mr-3 p-0 h-auto">
+                            <Button variant="link" className="text-primary hover:text-primary/80 mr-3 p-0 h-auto text-center font-bold">
                               Open
                             </Button>
                           </Link>

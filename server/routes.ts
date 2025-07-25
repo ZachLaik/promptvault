@@ -210,7 +210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/projects", authenticateSession, async (req: AuthenticatedRequest, res) => {
     try {
-      const data = insertProjectSchema.parse(req.body);
+      const data = insertProjectSchema.omit({ ownerId: true }).parse(req.body);
       
       // Check if slug is unique
       const existingProject = await storage.getProjectBySlug(data.slug);
@@ -234,7 +234,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(project);
     } catch (error) {
-      res.status(400).json({ message: "Invalid input" });
+      console.error("Project creation error:", error);
+      if (error instanceof Error && error.message.includes('validation')) {
+        res.status(400).json({ message: "Invalid input", details: error.message });
+      } else {
+        res.status(400).json({ message: "Invalid input" });
+      }
     }
   });
 

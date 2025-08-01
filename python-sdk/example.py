@@ -17,10 +17,21 @@ def main():
     # Method 1: Elegant dot notation (recommended)
     print("1. Using dot notation:")
     try:
-        prompt = promptvault.agents_lextenso.research_manager
-        print(f"✅ Prompt fetched successfully!")
-        print(f"📝 Content preview: {prompt[:100]}...")
-        print(f"📊 Full length: {len(prompt)} characters\n")
+        prompt_template = promptvault.agents_lextenso.research_manager
+        print(f"✅ Prompt template fetched successfully!")
+        print(f"📝 Raw content preview: {str(prompt_template)[:100]}...")
+        print(f"📊 Full length: {len(str(prompt_template))} characters\n")
+        
+        # Example with variables
+        if "{" in str(prompt_template):
+            print("🔧 Template contains variables - rendering with example data:")
+            rendered = prompt_template.render(
+                user_name="John Doe",
+                topic="contract law",
+                urgency="high"
+            )
+            print(f"📝 Rendered preview: {rendered[:100]}...")
+        
     except Exception as e:
         print(f"❌ Error: {e}\n")
     

@@ -25,15 +25,23 @@ promptvault.configure(
 )
 
 # Use elegant dot notation to access prompts
-prompt = promptvault.agents_lextenso.research_manager
+prompt_template = promptvault.agents_lextenso.research_manager
 
-# That's it! Use the prompt content
-print(prompt)
+# Use as-is (backward compatible)
+print(prompt_template)
+
+# Or render with variables
+rendered_prompt = prompt_template.render(
+    user_name="John Doe",
+    topic="contract termination",
+    urgency="high"
+)
 ```
 
 ## Features
 
 ✅ **Elegant syntax**: `promptvault.project_name.prompt_name`  
+✅ **Variable substitution**: Easy template rendering with `.render()`  
 ✅ **Automatic latest version**: Always get the most recent prompt  
 ✅ **Simple configuration**: One-time setup  
 ✅ **Error handling**: Clear error messages  
@@ -58,6 +66,24 @@ promptvault.configure(
 )
 ```
 
+### Variable Substitution
+```python
+# In your prompt content, use {variable_name} placeholders:
+# "You are a {role} assistant. Help with {task}: {user_question}"
+
+prompt_template = promptvault.customer_support.chat_assistant
+
+# Render with variables
+rendered = prompt_template.render(
+    role="customer service",
+    task="billing questions", 
+    user_question="How do I cancel my subscription?"
+)
+
+print(rendered)
+# Output: "You are a customer service assistant. Help with billing questions: How do I cancel my subscription?"
+```
+
 ### With OpenAI
 ```python
 import promptvault
@@ -67,8 +93,13 @@ import openai
 promptvault.configure(base_url="...", api_key="...")
 openai.api_key = "your_openai_key"
 
-# Use prompt with OpenAI
-system_prompt = promptvault.agents_lextenso.research_manager
+# Use prompt with variables
+template = promptvault.agents_lextenso.research_manager
+system_prompt = template.render(
+    expertise="contract law",
+    focus_area="termination clauses",
+    detail_level="comprehensive"
+)
 
 response = openai.ChatCompletion.create(
     model="gpt-4",

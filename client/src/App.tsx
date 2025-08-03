@@ -7,9 +7,10 @@ import { AuthProvider, useAuth } from "@/hooks/use-auth";
 import LoginPage from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import ProjectsPage from "@/pages/projects";
-import ProjectDetail from "@/pages/project-detail";
-import PromptEditor from "@/pages/prompt-editor";
-import PromptNewPage from "@/pages/prompt-new";
+import ProjectDetail from "./pages/project-detail";
+import PromptEditor from "./pages/prompt-editor";
+import PromptNew from "./pages/prompt-new";
+import DocsPage from "./pages/docs";
 import ApiKeysPage from "@/pages/api-keys";
 import TeamPage from "@/pages/team";
 import NotFound from "@/pages/not-found";
@@ -58,7 +59,7 @@ function Router() {
       </Route>
       <Route path="/projects/:projectId/prompts/new">
         <ProtectedRoute>
-          <PromptNewPage />
+          <PromptNew />
         </ProtectedRoute>
       </Route>
       <Route path="/projects/:projectId/prompts/:promptSlug/edit">
@@ -74,6 +75,21 @@ function Router() {
       <Route path="/team">
         <ProtectedRoute>
           <TeamPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/projects/:projectId/prompts/new">
+        <ProtectedRoute>
+          <PromptNew />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/projects/:projectId/prompts/:promptId">
+        <ProtectedRoute>
+          <PromptEditor />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/docs">
+        <ProtectedRoute>
+          <DocsPage />
         </ProtectedRoute>
       </Route>
       <Route component={NotFound} />

@@ -8,7 +8,8 @@ import {
   Key,
   Users,
   Settings,
-  Code
+  Code,
+  Book
 } from "lucide-react";
 
 export function Sidebar() {
@@ -20,6 +21,7 @@ export function Sidebar() {
     { name: "Projects", href: "/projects", icon: Folder },
     { name: "API Keys", href: "/api-keys", icon: Key },
     { name: "Team", href: "/team", icon: Users },
+    { name: "Docs", href: "/docs", icon: Book },
   ];
 
   const isActive = (href: string) => {

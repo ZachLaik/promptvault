@@ -27,14 +27,14 @@ export default function DocsPage() {
                 <p>The easiest way to use prompts with elegant syntax:</p>
 
                 <h3>Installation</h3>
-                <pre><code># Install from GitHub subdirectory
+                <pre><code>{`# Install from GitHub subdirectory
 pip install git+https://github.com/ZachLaik/promptvault.git#subdirectory=python-sdk
 
 # Or install locally if you cloned the repo
-cd python-sdk && pip install .</code></pre>
+cd python-sdk && pip install .`}</code></pre>
 
                 <h3>Usage</h3>
-                <pre><code>import promptvault
+                <pre><code>{`import promptvault
 
 # Configure once
 promptvault.configure(
@@ -46,7 +46,7 @@ promptvault.configure(
 prompt = promptvault.research_agents.research_manager
 
 # That's it! Use the prompt content
-print(prompt)</code></pre>
+print(prompt)`}</code></pre>
 
                 <h3>Features</h3>
                 <ul>
@@ -61,7 +61,7 @@ print(prompt)</code></pre>
 
                 <p>For developers who prefer direct API calls:</p>
 
-                <pre><code>import requests
+                <pre><code>{`import requests
 
 def get_prompt(slug, project_slug, api_key, base_url):
     """Fetch a prompt from Prompt Manager"""
@@ -80,13 +80,13 @@ prompt = get_prompt(
     base_url="https://prompting-manager.replit.app"
 )
 
-print(prompt)  # Your full prompt content ready to use</code></pre>
+print(prompt)  # Your full prompt content ready to use`}</code></pre>
 
                 <h2>Real-World Examples</h2>
 
                 <h3>With PromptVault SDK + OpenAI</h3>
 
-                <pre><code>import promptvault
+                <pre><code>{`import promptvault
 import openai
 
 # Setup
@@ -107,11 +107,11 @@ response = openai.ChatCompletion.create(
     ]
 )
 
-print(response.choices[0].message.content)</code></pre>
+print(response.choices[0].message.content)`}</code></pre>
 
                 <h3>With Direct HTTP API + OpenAI</h3>
 
-                <pre><code>import requests
+                <pre><code>{`import requests
 import openai
 
 def get_prompt(slug, project_slug, api_key, base_url):
@@ -138,7 +138,7 @@ response = openai.ChatCompletion.create(
     ]
 )
 
-print(response.choices[0].message.content)</code></pre>
+print(response.choices[0].message.content)`}</code></pre>
 
                 <h2>Getting Started</h2>
 

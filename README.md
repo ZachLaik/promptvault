@@ -21,12 +21,12 @@ import promptvault
 
 # Configure once
 promptvault.configure(
-    base_url="https://your-replit-url.replit.dev",
+    base_url="https://prompting-manager.replit.app",
     api_key="your_api_key"
 )
 
-# Use elegant dot notation
-prompt = promptvault.agents_lextenso.research_manager
+# Use elegant dot notation (promptvault.project_name.prompt_name)
+prompt = promptvault.research_agents.research_manager
 
 # That's it! Use the prompt content
 print(prompt)
@@ -57,10 +57,10 @@ def get_prompt(slug, project_slug, api_key, base_url):
 
 # Usage
 prompt = get_prompt(
-    slug="research-manager",
-    project_slug="agents-lextenso", 
+    slug="research_manager",
+    project_slug="research_agents", 
     api_key="your_api_key",
-    base_url="https://your-replit-url.replit.dev"
+    base_url="https://prompting-manager.replit.app"
 )
 
 print(prompt)  # Your full prompt content ready to use
@@ -76,7 +76,7 @@ import openai
 
 # Setup
 promptvault.configure(
-    base_url="https://your-replit-url.replit.dev",
+    base_url="https://prompting-manager.replit.app,
     api_key="your_api_key"
 )
 openai.api_key = "your_openai_key"
@@ -111,10 +111,10 @@ def get_prompt(slug, project_slug, api_key, base_url):
 
 # Use with OpenAI
 system_prompt = get_prompt(
-    "research-manager", 
-    "agents-lextenso",
+    "research_manager", # (prompt name)
+    "research_agents", # (project name)
     "your_api_key",
-    "https://your-replit-url.replit.dev"
+    "https://prompting-manager.replit.app"
 )
 
 response = openai.ChatCompletion.create(
@@ -149,6 +149,6 @@ Both methods support:
 ## API Documentation
 
 For complete API reference and testing, visit your Prompt Manager's Swagger UI at:
-`https://your-replit-url.replit.dev/docs`
+`https://prompting-manager.replit.app/docs`
 
 Ready to get started? Choose Option 1 (PromptVault SDK) for the best developer experience!

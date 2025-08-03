@@ -4,53 +4,64 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 
 export default function DocsPage() {
-  const readmeContent = `# Prompt Manager - Python Integration
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <Sidebar />
+      
+      <main className="ml-64 min-h-screen">
+        <Header
+          title="Documentation"
+          subtitle="Integration guide for using Prompt Manager in your applications"
+        />
+        
+        <div className="p-6">
+          <Card>
+            <CardContent className="p-8">
+              <div className="prose prose-slate max-w-none prose-headings:text-gray-900 prose-h1:text-3xl prose-h1:font-bold prose-h1:mb-6 prose-h2:text-2xl prose-h2:font-semibold prose-h2:mb-4 prose-h2:mt-8 prose-h3:text-xl prose-h3:font-medium prose-h3:mb-3 prose-h3:mt-6 prose-p:mb-4 prose-p:text-gray-700 prose-p:leading-relaxed prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-code:bg-gray-100 prose-code:text-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-strong:text-gray-900 prose-ul:mb-4 prose-li:mb-1">
+                <h1>Prompt Manager - Python Integration</h1>
 
-This Prompt Manager provides multiple ways to integrate prompts into your Python applications. Choose the method that best fits your needs.
+                <p>This Prompt Manager provides multiple ways to integrate prompts into your Python applications. Choose the method that best fits your needs.</p>
 
-## Option 1: PromptVault SDK (Recommended)
+                <h2>Option 1: PromptVault SDK (Recommended)</h2>
 
-The easiest way to use prompts with elegant syntax:
+                <p>The easiest way to use prompts with elegant syntax:</p>
 
-### Installation
-\`\`\`bash
-# Install from GitHub subdirectory
+                <h3>Installation</h3>
+                <pre><code># Install from GitHub subdirectory
 pip install git+https://github.com/ZachLaik/promptvault.git#subdirectory=python-sdk
 
 # Or install locally if you cloned the repo
-cd python-sdk && pip install .
-\`\`\`
+cd python-sdk && pip install .</code></pre>
 
-### Usage
-\`\`\`python
-import promptvault
+                <h3>Usage</h3>
+                <pre><code>import promptvault
 
 # Configure once
 promptvault.configure(
-    base_url="https://your-replit-url.replit.dev",
+    base_url="https://prompting-manager.replit.app",
     api_key="your_api_key"
 )
 
-# Use elegant dot notation
-prompt = promptvault.agents_lextenso.research_manager
+# Use elegant dot notation (promptvault.project_name.prompt_name)
+prompt = promptvault.research_agents.research_manager
 
 # That's it! Use the prompt content
-print(prompt)
-\`\`\`
+print(prompt)</code></pre>
 
-### Features
-- ✅ **Elegant syntax**: \`promptvault.project_name.prompt_name\`
-- ✅ **One-time setup**: Configure once, use everywhere  
-- ✅ **Latest version**: Always get the most recent prompt
-- ✅ **Error handling**: Clear error messages
-- ✅ **Specific versions**: \`promptvault.get_prompt("slug", "project", version=3)\`
+                <h3>Features</h3>
+                <ul>
+                  <li><strong>Elegant syntax</strong>: <code>promptvault.project_name.prompt_name</code></li>
+                  <li><strong>One-time setup</strong>: Configure once, use everywhere</li>
+                  <li><strong>Latest version</strong>: Always get the most recent prompt</li>
+                  <li><strong>Error handling</strong>: Clear error messages</li>
+                  <li><strong>Specific versions</strong>: <code>promptvault.get_prompt("slug", "project", version=3)</code></li>
+                </ul>
 
-## Option 2: Direct HTTP API (30 seconds)
+                <h2>Option 2: Direct HTTP API (30 seconds)</h2>
 
-For developers who prefer direct API calls:
+                <p>For developers who prefer direct API calls:</p>
 
-\`\`\`python
-import requests
+                <pre><code>import requests
 
 def get_prompt(slug, project_slug, api_key, base_url):
     """Fetch a prompt from Prompt Manager"""
@@ -63,26 +74,24 @@ def get_prompt(slug, project_slug, api_key, base_url):
 
 # Usage
 prompt = get_prompt(
-    slug="research-manager",
-    project_slug="agents-lextenso", 
+    slug="research_manager",
+    project_slug="research_agents", 
     api_key="your_api_key",
-    base_url="https://your-replit-url.replit.dev"
+    base_url="https://prompting-manager.replit.app"
 )
 
-print(prompt)  # Your full prompt content ready to use
-\`\`\`
+print(prompt)  # Your full prompt content ready to use</code></pre>
 
-## Real-World Examples
+                <h2>Real-World Examples</h2>
 
-### With PromptVault SDK + OpenAI
+                <h3>With PromptVault SDK + OpenAI</h3>
 
-\`\`\`python
-import promptvault
+                <pre><code>import promptvault
 import openai
 
 # Setup
 promptvault.configure(
-    base_url="https://your-replit-url.replit.dev",
+    base_url="https://prompting-manager.replit.app",
     api_key="your_api_key"
 )
 openai.api_key = "your_openai_key"
@@ -98,13 +107,11 @@ response = openai.ChatCompletion.create(
     ]
 )
 
-print(response.choices[0].message.content)
-\`\`\`
+print(response.choices[0].message.content)</code></pre>
 
-### With Direct HTTP API + OpenAI
+                <h3>With Direct HTTP API + OpenAI</h3>
 
-\`\`\`python
-import requests
+                <pre><code>import requests
 import openai
 
 def get_prompt(slug, project_slug, api_key, base_url):
@@ -117,10 +124,10 @@ def get_prompt(slug, project_slug, api_key, base_url):
 
 # Use with OpenAI
 system_prompt = get_prompt(
-    "research-manager", 
-    "agents-lextenso",
+    "research_manager", # (prompt name)
+    "research_agents", # (project name)
     "your_api_key",
-    "https://your-replit-url.replit.dev"
+    "https://prompting-manager.replit.app"
 )
 
 response = openai.ChatCompletion.create(
@@ -131,63 +138,39 @@ response = openai.ChatCompletion.create(
     ]
 )
 
-print(response.choices[0].message.content)
-\`\`\`
+print(response.choices[0].message.content)</code></pre>
 
-## Getting Started
+                <h2>Getting Started</h2>
 
-### Step 1: Get Your API Key
-1. Log into your Prompt Manager
-2. Go to API Keys section  
-3. Generate a new API key
+                <h3>Step 1: Get Your API Key</h3>
+                <ol>
+                  <li>Log into your Prompt Manager</li>
+                  <li>Go to API Keys section</li>
+                  <li>Generate a new API key</li>
+                </ol>
 
-### Step 2: Choose Your Integration Method
-- **Recommended**: Use the PromptVault SDK for elegant syntax
-- **Alternative**: Use direct HTTP calls for more control
+                <h3>Step 2: Choose Your Integration Method</h3>
+                <ul>
+                  <li><strong>Recommended</strong>: Use the PromptVault SDK for elegant syntax</li>
+                  <li><strong>Alternative</strong>: Use direct HTTP calls for more control</li>
+                </ul>
 
-### Step 3: Start Using Prompts
-Both methods support:
-- ✅ **Latest Version**: Always get the most recent prompt
-- ✅ **Specific Versions**: Access any version with \`version=N\` 
-- ✅ **Error Handling**: Clear error messages and status codes
-- ✅ **Performance**: Built-in request optimization
+                <h3>Step 3: Start Using Prompts</h3>
+                <p>Both methods support:</p>
+                <ul>
+                  <li><strong>Latest Version</strong>: Always get the most recent prompt</li>
+                  <li><strong>Specific Versions</strong>: Access any version with <code>version=N</code></li>
+                  <li><strong>Error Handling</strong>: Clear error messages and status codes</li>
+                  <li><strong>Performance</strong>: Built-in request optimization</li>
+                </ul>
 
-## API Documentation
+                <h2>API Documentation</h2>
 
-For complete API reference and testing, visit your Prompt Manager's Swagger UI at:
-\`https://your-replit-url.replit.dev/docs\`
+                <p>For complete API reference and testing, visit your Prompt Manager's Swagger UI at:<br />
+                <code>https://prompting-manager.replit.app/docs</code></p>
 
-Ready to get started? Choose Option 1 (PromptVault SDK) for the best developer experience!`;
-
-  return (
-    <div className="min-h-screen bg-slate-50">
-      <Sidebar />
-      
-      <main className="ml-64 min-h-screen">
-        <Header
-          title="Documentation"
-          subtitle="Integration guide for using Prompt Manager in your applications"
-        />
-        
-        <div className="p-6">
-          <Card>
-            <CardContent className="p-8">
-              <div 
-                className="prose prose-slate max-w-none"
-                dangerouslySetInnerHTML={{
-                  __html: readmeContent
-                    .replace(/```(\w+)?\n([\s\S]*?)```/g, '<pre class="bg-gray-100 p-4 rounded-lg overflow-x-auto"><code>$2</code></pre>')
-                    .replace(/`([^`]+)`/g, '<code class="bg-gray-100 px-1 rounded text-sm">$1</code>')
-                    .replace(/^# (.+)$/gm, '<h1 class="text-3xl font-bold mb-6 text-gray-900">$1</h1>')
-                    .replace(/^## (.+)$/gm, '<h2 class="text-2xl font-semibold mb-4 mt-8 text-gray-800">$2</h2>')
-                    .replace(/^### (.+)$/gm, '<h3 class="text-xl font-medium mb-3 mt-6 text-gray-700">$3</h3>')
-                    .replace(/^\- (.+)$/gm, '<li class="mb-1">$1</li>')
-                    .replace(/(<li.*<\/li>)/gs, '<ul class="list-disc ml-6 mb-4">$1</ul>')
-                    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\n\n/g, '</p><p class="mb-4">')
-                    .replace(/^(.+)$/gm, '<p class="mb-4">$1</p>')
-                }}
-              />
+                <p><strong>Ready to get started? Choose Option 1 (PromptVault SDK) for the best developer experience!</strong></p>
+              </div>
             </CardContent>
           </Card>
         </div>

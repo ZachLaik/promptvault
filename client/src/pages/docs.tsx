@@ -53,8 +53,45 @@ print(prompt)`}</code></pre>
                   <li><strong>Elegant syntax</strong>: <code>promptvault.project_name.prompt_name</code></li>
                   <li><strong>One-time setup</strong>: Configure once, use everywhere</li>
                   <li><strong>Latest version</strong>: Always get the most recent prompt</li>
+                  <li><strong>Variable substitution</strong>: Easy template rendering with <code>.render()</code></li>
                   <li><strong>Error handling</strong>: Clear error messages</li>
                   <li><strong>Specific versions</strong>: <code>promptvault.get_prompt("slug", "project", version=3)</code></li>
+                </ul>
+
+                <h3>Using Variables in Prompts</h3>
+                <p>PromptVault supports variable substitution using Python's string formatting. In your prompt content, use <code>{`{variable_name}`}</code> placeholders:</p>
+
+                <pre><code>{`# Example prompt content in Prompt Manager:
+"You are a {role} assistant. Help with {task}: {user_question}"`}</code></pre>
+
+                <p>Then render the prompt with variables in your Python code:</p>
+
+                <pre><code>{`import promptvault
+
+# Configure once
+promptvault.configure(
+    base_url="https://prompting-manager.replit.app",
+    api_key="your_api_key"
+)
+
+# Get the prompt template
+template = promptvault.customer_support.chat_assistant
+
+# Render with variables
+rendered_prompt = template.render(
+    role="customer service",
+    task="billing questions",
+    user_question="How do I cancel my subscription?"
+)
+
+print(rendered_prompt)
+# Output: "You are a customer service assistant. Help with billing questions: How do I cancel my subscription?"`}</code></pre>
+
+                <h4>Variable Features:</h4>
+                <ul>
+                  <li><strong>Backward compatible</strong>: Use prompts as strings without variables</li>
+                  <li><strong>Error handling</strong>: Clear errors for missing variables</li>
+                  <li><strong>Flexible</strong>: Pass any number of variables as keyword arguments</li>
                 </ul>
 
                 <h2>Option 2: Direct HTTP API (30 seconds)</h2>
@@ -96,8 +133,13 @@ promptvault.configure(
 )
 openai.api_key = "your_openai_key"
 
-# Use elegant syntax directly
-system_prompt = promptvault.agents_lextenso.research_manager
+# Get prompt template and render with variables
+template = promptvault.agents_lextenso.research_manager
+system_prompt = template.render(
+    expertise="contract law",
+    focus_area="termination clauses",
+    detail_level="comprehensive"
+)
 
 response = openai.ChatCompletion.create(
     model="gpt-4",

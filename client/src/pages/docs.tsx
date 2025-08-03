@@ -17,7 +17,7 @@ export default function DocsPage() {
         <div className="p-6">
           <Card>
             <CardContent className="p-8">
-              <div className="prose prose-slate max-w-none prose-headings:text-gray-900 prose-h1:text-3xl prose-h1:font-bold prose-h1:mb-6 prose-h2:text-2xl prose-h2:font-semibold prose-h2:mb-4 prose-h2:mt-8 prose-h3:text-xl prose-h3:font-medium prose-h3:mb-3 prose-h3:mt-6 prose-p:mb-4 prose-p:text-gray-700 prose-p:leading-relaxed prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-code:bg-gray-100 prose-code:text-gray-800 prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-strong:text-gray-900 prose-ul:mb-4 prose-li:mb-1">
+              <div className="prose prose-slate max-w-none prose-headings:text-black prose-h1:text-xl prose-h1:font-bold prose-h1:mb-4 prose-h2:text-lg prose-h2:font-semibold prose-h2:mb-3 prose-h2:mt-6 prose-h3:text-base prose-h3:font-medium prose-h3:mb-2 prose-h3:mt-4 prose-p:mb-3 prose-p:text-black prose-p:text-sm prose-p:leading-relaxed prose-pre:bg-gray-900 prose-pre:text-gray-100 prose-pre:text-xs prose-code:bg-gray-100 prose-code:text-black prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-xs prose-strong:text-black prose-ul:mb-3 prose-li:mb-1 prose-li:text-black prose-li:text-sm"></div>
                 <h1>Prompt Manager - Python Integration</h1>
 
                 <p>This Prompt Manager provides multiple ways to integrate prompts into your Python applications. Choose the method that best fits your needs.</p>

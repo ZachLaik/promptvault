@@ -27,8 +27,9 @@ export default function DocsPage() {
                 <div>
                   <h4 className="font-semibold mb-2">Installation</h4>
                   <pre className="bg-gray-100 p-3 rounded text-sm overflow-x-auto">
-                    <code>npm install promptvault-js</code>
+                    <code>npm install git+https://github.com/your-username/prompt-manager.git#main:javascript-sdk</code>
                   </pre>
+                  <p className="text-xs text-gray-500 mt-2">Or copy the SDK files directly from the repository</p>
                 </div>
 
                 <div>
@@ -67,8 +68,9 @@ const v1 = await client.getPrompt('prompt-slug', 'project-slug', { version: 1 })
                 <div>
                   <h4 className="font-semibold mb-2">Installation</h4>
                   <pre className="bg-gray-100 p-3 rounded text-sm overflow-x-auto">
-                    <code>pip install promptvault</code>
+                    <code>pip install git+https://github.com/your-username/prompt-manager.git#subdirectory=python-sdk</code>
                   </pre>
+                  <p className="text-xs text-gray-500 mt-2">Or copy the python-sdk directory to your project</p>
                 </div>
 
                 <div>

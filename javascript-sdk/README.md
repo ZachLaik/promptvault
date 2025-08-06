@@ -6,7 +6,13 @@ A lightweight JavaScript/Node.js client for the PromptVault API that provides an
 ## Installation
 
 ```bash
-npm install ./javascript-sdk
+# Install from GitHub (replace with your actual repository URL)
+npm install git+https://github.com/your-username/prompt-manager.git#main:javascript-sdk
+
+# Or clone and install locally
+git clone https://github.com/your-username/prompt-manager.git
+cd prompt-manager/javascript-sdk
+npm install
 ```
 
 Or copy the `promptvault.js` file directly into your project.

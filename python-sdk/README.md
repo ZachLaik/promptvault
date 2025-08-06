@@ -5,12 +5,13 @@ The simplest way to use prompts from your Prompt Manager in Python code.
 ## Installation
 
 ```bash
-pip install promptvault
-```
+# Install from GitHub (replace with your actual repository URL)
+pip install git+https://github.com/your-username/prompt-manager.git#subdirectory=python-sdk
 
-Or install from GitHub:
-```bash
-pip install git+https://github.com/your-username/promptvault.git
+# Or clone and install locally
+git clone https://github.com/your-username/prompt-manager.git
+cd prompt-manager/python-sdk
+pip install -e .
 ```
 
 ## Quick Start

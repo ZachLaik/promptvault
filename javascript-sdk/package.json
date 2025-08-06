@@ -1,0 +1,24 @@
+
+{
+  "name": "promptvault-js",
+  "version": "1.0.0",
+  "description": "JavaScript SDK for PromptVault API",
+  "main": "promptvault.js",
+  "type": "module",
+  "scripts": {
+    "example": "node example.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "keywords": [
+    "promptvault",
+    "prompt",
+    "management",
+    "api",
+    "sdk"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

@@ -6,10 +6,10 @@ The simplest way to use prompts from your Prompt Manager in Python code.
 
 ```bash
 # Install from GitHub (replace with your actual repository URL)
-pip install git+https://github.com/your-username/prompt-manager.git#subdirectory=python-sdk
+pip install git+https://github.com/ZachLaik/prompt-manager.git#subdirectory=python-sdk
 
 # Or clone and install locally
-git clone https://github.com/your-username/prompt-manager.git
+git clone https://github.com/ZachLaik/prompt-manager.git
 cd prompt-manager/python-sdk
 pip install -e .
 ```

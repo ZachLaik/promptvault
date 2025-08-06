@@ -10,7 +10,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Prompt Manager",
-    url="https://github.com/your-username/promptvault",
+    url="https://github.com/ZachLaik/promptvault",
     packages=find_packages(),
     install_requires=[
         "requests>=2.25.0",

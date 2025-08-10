@@ -6,11 +6,11 @@ The simplest way to use prompts from your Prompt Manager in Python code.
 
 ```bash
 # Install from GitHub (replace with your actual repository URL)
-pip install git+https://github.com/ZachLaik/prompt-manager.git#subdirectory=python-sdk
+pip install git+https://github.com/ZachLaik/promptvault#subdirectory=python-sdk
 
 # Or clone and install locally
-git clone https://github.com/ZachLaik/prompt-manager.git
-cd prompt-manager/python-sdk
+git clone https://github.com/ZachLaik/promptvault.git
+cd promptvault/python-sdk
 pip install -e .
 ```
 
@@ -21,7 +21,7 @@ import promptvault
 
 # Configure once (at app startup)
 promptvault.configure(
-    base_url="https://your-replit-url.replit.dev",
+    base_url="https://github.com/ZachLaik/promptvault",
     api_key="your_api_key"
 )
 

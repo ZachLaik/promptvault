@@ -54,11 +54,11 @@ export default function DocsPage() {
             <p className="text-sm text-blue-800 mt-1">
               Complete integration instructions for AI agents: 
               <a 
-                href="/docs/llms.txt" 
+                href="/llms.txt" 
                 target="_blank"
                 className="ml-1 underline hover:text-blue-600"
               >
-                /docs/llms.txt
+                /llms.txt
               </a>
             </p>
           </div>

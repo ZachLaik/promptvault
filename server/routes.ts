@@ -666,9 +666,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   /**
    * @swagger
-   * /docs/llms.txt:
+   * /llms.txt:
    *   get:
    *     summary: Get LLM integration instructions
+   *     description: Returns plain text instructions for AI agents to integrate PromptVault
+   *     responses:
+   *       200:
+   *         description: LLM integration instructions
+   *         content:
+   *           text/plain:
+   *             schema:
+   *               type: string
+   */
+  app.get('/llms.txt', (req, res) => {
+    res.setHeader('Content-Type', 'text/plain');
+    res.sendFile(path.resolve(__dirname, '../docs/llms.txt'));
+  });
+
+  /**
+   * @swagger
+   * /docs/llms.txt:
+   *   get:
+   *     summary: Get LLM integration instructions (legacy endpoint)
    *     description: Returns plain text instructions for AI agents to integrate PromptVault
    *     responses:
    *       200:

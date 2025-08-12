@@ -680,7 +680,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
    */
   app.get('/docs/llms.txt', (req, res) => {
     res.setHeader('Content-Type', 'text/plain');
-    res.sendFile(path.join(__dirname, '../docs/llms.txt'));
+    res.sendFile(path.resolve(__dirname, '../docs/llms.txt'));
   });
 
   /**

@@ -12,59 +12,247 @@ PromptVault is a centralized prompt manager that helps you:
 - ✅ **Template Variables**: Use dynamic placeholders in prompts
 - ✅ **Multi-Project**: Organize prompts by project/domain
 
-## Quick Integration
+## Quick Setup & Onboarding
 
-### Python SDK (Recommended)
+### Step 1: Get Your API Key
+First, ask the user to set their environment variable:
+```bash
+# Ask user to set this environment variable
+export PROMPTVAULT_API_KEY="pk_your_api_key_here"
+```
+
+### Step 2: Create a Project
+```python
+import requests
+import os
+
+def create_project(name, slug, description=""):
+    response = requests.post(
+        f"{BASE_URL}/api/projects",
+        headers={"x-api-key": os.getenv("PROMPTVAULT_API_KEY")},
+        json={
+            "name": name,
+            "slug": slug,
+            "description": description
+        }
+    )
+    return response.json()
+
+# Example: Create project for the current codebase
+project = create_project("My AI Project", "my-ai-project", "AI prompts for my application")
+```
+
+### Step 3: Upload Prompts from Code
+```python
+def create_prompt_version(slug, project_slug, content, message="Initial version"):
+    response = requests.post(
+        f"{BASE_URL}/api/prompts/{slug}",
+        headers={"x-api-key": os.getenv("PROMPTVAULT_API_KEY")},
+        json={
+            "content": content,
+            "message": message,
+            "projectSlug": project_slug
+        }
+    )
+    return response.json()
+
+# Example: Extract and upload prompts from your code
+prompts_to_upload = [
+    {
+        "slug": "system-prompt",
+        "content": "You are a helpful AI assistant specialized in..."
+    },
+    {
+        "slug": "user-query-processor", 
+        "content": "Process the following user query and respond with..."
+    }
+]
+
+for prompt in prompts_to_upload:
+    create_prompt_version(prompt["slug"], "my-ai-project", prompt["content"])
+```
+
+## Full Integration Examples
+
+### Python SDK Integration
 ```python
 import promptvault
+import os
 
 # Configure once
 promptvault.configure(
-    base_url="https://prompting-manager.replit.app",
-    api_key="pk_your_api_key"
+    base_url="https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev",
+    api_key=os.getenv("PROMPTVAULT_API_KEY")
 )
 
-# Use elegant dot notation
-prompt = promptvault.project_name.prompt_name
+# Replace hardcoded prompts in your code with:
+system_prompt = promptvault.my_ai_project.system_prompt
+user_processor = promptvault.my_ai_project.user_query_processor
 
-# Render with variables
-rendered = prompt.render(user_name="John", task="analyze data")
+# Use with variables
+rendered = system_prompt.render(
+    expertise="Python development",
+    context="web application"
+)
 ```
 
 ### Direct HTTP API
 ```python
 import requests
+import os
 
-def get_prompt(slug, project_slug, api_key, base_url):
+BASE_URL = "https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev"
+
+def get_prompt(slug, project_slug):
     response = requests.get(
-        f"{base_url}/api/prompts/{slug}",
-        headers={"x-api-key": api_key},
+        f"{BASE_URL}/api/prompts/{slug}",
+        headers={"x-api-key": os.getenv("PROMPTVAULT_API_KEY")},
         params={"projectSlug": project_slug}
     )
     return response.json()["content"]
+
+# Usage in your application
+system_prompt = get_prompt("system-prompt", "my-ai-project")
 ```
 
-## Key API Endpoints
+## Complete API Reference
 
-- `POST /api/projects` - Create project
-- `POST /api/prompts` - Create prompt  
-- `POST /api/prompts/{slug}` - Upload prompt version
-- `GET /api/prompts/{slug}?projectSlug=project` - Retrieve prompt
+### Authentication
+All requests require the `x-api-key` header with your API key.
 
-## Benefits for AI Agents
+### Core Endpoints
 
-1. **Centralized Management**: No more scattered prompt strings in code
-2. **Easy Updates**: Change prompts without code deployments
-3. **Version History**: See how prompts evolved over time
-4. **Template Support**: Use `{variable}` placeholders for dynamic content
-5. **Team Sharing**: Multiple developers can access the same prompts
-6. **API-First**: Built for programmatic access
+**Create Project**
+```http
+POST /api/projects
+Content-Type: application/json
+x-api-key: your_api_key
 
-## Getting Started
+{
+  "name": "Project Name",
+  "slug": "project-slug", 
+  "description": "Project description"
+}
+```
 
-1. Get your API key from the PromptVault dashboard
-2. Install the SDK: `pip install git+https://github.com/ZachLaik/promptvault.git#subdirectory=python-sdk`
-3. Configure with your base URL and API key
-4. Start using prompts with elegant syntax!
+**Create/Update Prompt**
+```http
+POST /api/prompts/{slug}
+Content-Type: application/json
+x-api-key: your_api_key
 
-Ready to centralize your prompts? Let's build something amazing together! 🎯
+{
+  "content": "Your prompt content with {variables}",
+  "message": "Version description",
+  "projectSlug": "project-slug"
+}
+```
+
+**Retrieve Prompt**
+```http
+GET /api/prompts/{slug}?projectSlug=project-slug
+x-api-key: your_api_key
+```
+
+**Get Specific Version**
+```http
+GET /api/prompts/{slug}?projectSlug=project-slug&version=2
+x-api-key: your_api_key
+```
+
+## Onboarding Workflow for Agents
+
+When you encounter a codebase, follow this workflow:
+
+### 1. Environment Setup
+Ask user: "Please set your PROMPTVAULT_API_KEY environment variable. You can get this from your PromptVault dashboard."
+
+### 2. Code Analysis
+Scan the codebase for:
+- Hardcoded prompt strings
+- OpenAI/Anthropic system messages
+- Template strings used for AI interactions
+- Configuration files with AI prompts
+
+### 3. Project Creation
+```python
+# Create project based on codebase
+project_name = input("What should we name your PromptVault project? ")
+project_slug = project_name.lower().replace(" ", "-")
+create_project(project_name, project_slug, "AI prompts extracted from codebase")
+```
+
+### 4. Prompt Extraction & Upload
+```python
+# Example extraction patterns to look for:
+patterns_to_extract = [
+    "You are a",
+    "Act as a", 
+    "Your role is",
+    "system_prompt =",
+    "SYSTEM_MESSAGE =",
+    "messages=[{\"role\": \"system\""
+]
+
+# Upload each found prompt
+for i, prompt_content in enumerate(extracted_prompts):
+    slug = f"prompt-{i+1}" or generate_meaningful_slug(prompt_content)
+    create_prompt_version(slug, project_slug, prompt_content, "Extracted from codebase")
+```
+
+### 5. Code Refactoring
+Replace hardcoded prompts with PromptVault calls:
+```python
+# Before
+system_prompt = "You are a helpful assistant that..."
+
+# After  
+system_prompt = promptvault.my_project.helpful_assistant
+```
+
+### 6. Template Variables
+Convert static prompts to dynamic ones:
+```python
+# Before
+f"You are a {role} assistant. Help with {task}."
+
+# After in PromptVault
+"You are a {role} assistant. Help with {task}."
+
+# Usage
+rendered = promptvault.my_project.role_assistant.render(role="Python", task="debugging")
+```
+
+## Benefits for Your Codebase
+
+1. **No More Scattered Prompts**: Centralize all AI prompts in one place
+2. **Easy Updates**: Change prompts without code deployments  
+3. **Version History**: Track how your prompts evolve
+4. **Team Collaboration**: Share prompts across developers
+5. **Template Support**: Use variables for dynamic content
+6. **Environment Management**: Different prompts for dev/prod
+
+## Installation Commands
+
+```bash
+# Python SDK
+pip install git+https://github.com/ZachLaik/promptvault.git#subdirectory=python-sdk
+
+# JavaScript/Node.js (copy promptvault.js to your project)
+# wget https://raw.githubusercontent.com/ZachLaik/promptvault/main/javascript-sdk/promptvault.js
+```
+
+## Getting Started Checklist
+
+- [ ] User sets PROMPTVAULT_API_KEY environment variable
+- [ ] Install PromptVault SDK
+- [ ] Create project via API
+- [ ] Scan codebase for hardcoded prompts
+- [ ] Extract and upload prompts to PromptVault
+- [ ] Refactor code to use PromptVault SDK
+- [ ] Test dynamic prompt loading
+- [ ] Set up template variables where needed
+
+Ready to transform your codebase with centralized prompt management? Let's get started! 🎯
+
+Base URL: https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev

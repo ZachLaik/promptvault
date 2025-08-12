@@ -19,7 +19,7 @@ try:
     print("✅ Configuration successful")
     
     # Test the syntax we want
-    print("✅ Syntax test: promptvault.agents_lextenso.research_manager")
+    print("✅ Syntax test: promptvault.agents_research-agents.research_manager")
     print("✅ Package ready for use!")
     
 except ImportError as e:

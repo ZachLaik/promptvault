@@ -92,16 +92,16 @@ export default function DocsPage() {
 
 # Configure once
 promptvault.configure(
-    base_url="https://your-replit-url.replit.dev",
+    base_url="https://prompting-manager.replit.app",
     api_key="pk_your_api_key"
 )
 
 # Method 1: Elegant dot notation (recommended)
-prompt = promptvault.agents_lextenso.research_manager
+prompt = promptvault.agents_research-agents.research_manager
 print(str(prompt))
 
 # Method 2: Function call syntax
-prompt = promptvault.get_prompt("research-manager", "agents-lextenso")
+prompt = promptvault.get_prompt("research-manager", "agents-research-agents")
 
 # Method 3: With variables
 rendered = prompt.render(
@@ -130,16 +130,16 @@ rendered = prompt.render(
 
 // Configure once
 const pv = new PromptVault({
-  baseUrl: 'https://your-replit-url.replit.dev',
+  baseUrl: 'https://prompting-manager.replit.app',
   apiKey: 'pk_your_api_key'
 });
 
 // Method 1: Elegant dot notation (recommended)
-const prompt = await pv.agents_lextenso.research_manager();
+const prompt = await pv.agents_research-agents.research_manager();
 console.log(prompt.toString());
 
 // Method 2: Function call syntax
-const prompt2 = await pv.getPrompt('research-manager', 'agents-lextenso');
+const prompt2 = await pv.getPrompt('research-manager', 'agents-research-agents');
 
 // Method 3: With variables
 const rendered = prompt.render({
@@ -154,7 +154,7 @@ const rendered = prompt.render({
                 <div>
                   <h4 className="font-semibold mb-2">1. Get a prompt</h4>
                   <CodeBlock language="bash" copyId="curl-get">
-{`curl -X GET "https://your-replit-url.replit.dev/api/prompts/research-manager?projectSlug=agents-lextenso" \\
+{`curl -X GET "https://prompting-manager.replit.app/api/prompts/research-manager?projectSlug=agents-research-agents" \\
   -H "X-API-Key: pk_your_api_key"`}
                   </CodeBlock>
                 </div>
@@ -162,11 +162,11 @@ const rendered = prompt.render({
                 <div>
                   <h4 className="font-semibold mb-2">2. Create/Update a prompt</h4>
                   <CodeBlock language="bash" copyId="curl-post">
-{`curl -X POST "https://your-replit-url.replit.dev/api/prompts/research-manager" \\
+{`curl -X POST "https://prompting-manager.replit.app/api/prompts/research-manager" \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: pk_your_api_key" \\
   -d '{
-    "projectSlug": "agents-lextenso",
+    "projectSlug": "agents-research-agents",
     "content": "You are a research assistant...",
     "message": "Updated via API"
   }'`}
@@ -219,7 +219,7 @@ const rendered = prompt.render({
 
                   <TabsContent value="curl-example">
                     <CodeBlock language="bash" copyId="api-get-curl">
-{`curl -X GET "https://your-replit-url.replit.dev/api/prompts/research-manager?projectSlug=agents-lextenso" \\
+{`curl -X GET "https://prompting-manager.replit.app/api/prompts/research-manager?projectSlug=agents-research-agents" \\
   -H "X-API-Key: pk_your_api_key"`}
                     </CodeBlock>
                   </TabsContent>
@@ -229,9 +229,9 @@ const rendered = prompt.render({
 {`import requests
 
 response = requests.get(
-    "https://your-replit-url.replit.dev/api/prompts/research-manager",
+    "https://prompting-manager.replit.app/api/prompts/research-manager",
     headers={"X-API-Key": "pk_your_api_key"},
-    params={"projectSlug": "agents-lextenso"}
+    params={"projectSlug": "agents-research-agents"}
 )
 
 prompt_data = response.json()
@@ -242,7 +242,7 @@ print(prompt_data["content"])`}
                   <TabsContent value="js-example">
                     <CodeBlock language="javascript" copyId="api-get-js">
 {`const response = await fetch(
-  'https://your-replit-url.replit.dev/api/prompts/research-manager?projectSlug=agents-lextenso',
+  'https://prompting-manager.replit.app/api/prompts/research-manager?projectSlug=agents-research-agents',
   {
     headers: {
       'X-API-Key': 'pk_your_api_key'
@@ -284,11 +284,11 @@ console.log(promptData.content);`}
 
                   <TabsContent value="curl-create">
                     <CodeBlock language="bash" copyId="api-post-curl">
-{`curl -X POST "https://your-replit-url.replit.dev/api/prompts/research-manager" \\
+{`curl -X POST "https://prompting-manager.replit.app/api/prompts/research-manager" \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: pk_your_api_key" \\
   -d '{
-    "projectSlug": "agents-lextenso",
+    "projectSlug": "agents-research-agents",
     "content": "You are a research assistant specialized in legal matters...",
     "message": "Updated prompt with new guidelines"
   }'`}
@@ -300,13 +300,13 @@ console.log(promptData.content);`}
 {`import requests
 
 data = {
-    "projectSlug": "agents-lextenso",
+    "projectSlug": "agents-research-agents",
     "content": "You are a research assistant specialized in legal matters...",
     "message": "Updated prompt with new guidelines"
 }
 
 response = requests.post(
-    "https://your-replit-url.replit.dev/api/prompts/research-manager",
+    "https://prompting-manager.replit.app/api/prompts/research-manager",
     headers={
         "Content-Type": "application/json",
         "X-API-Key": "pk_your_api_key"
@@ -322,7 +322,7 @@ print(f"Created version {result['version']}")`}
                   <TabsContent value="js-create">
                     <CodeBlock language="javascript" copyId="api-post-js">
 {`const response = await fetch(
-  'https://your-replit-url.replit.dev/api/prompts/research-manager',
+  'https://prompting-manager.replit.app/api/prompts/research-manager',
   {
     method: 'POST',
     headers: {
@@ -330,7 +330,7 @@ print(f"Created version {result['version']}")`}
       'X-API-Key': 'pk_your_api_key'
     },
     body: JSON.stringify({
-      projectSlug: 'agents-lextenso',
+      projectSlug: 'agents-research-agents',
       content: 'You are a research assistant specialized in legal matters...',
       message: 'Updated prompt with new guidelines'
     })
@@ -362,7 +362,7 @@ console.log(\`Created version \${result.version}\`);`}
 
                   <TabsContent value="curl-list">
                     <CodeBlock language="bash" copyId="api-list-curl">
-{`curl -X GET "https://your-replit-url.replit.dev/api/projects/agents-lextenso/prompts" \\
+{`curl -X GET "https://prompting-manager.replit.app/api/projects/agents-research-agents/prompts" \\
   -H "X-API-Key: pk_your_api_key"`}
                     </CodeBlock>
                   </TabsContent>
@@ -372,7 +372,7 @@ console.log(\`Created version \${result.version}\`);`}
 {`import requests
 
 response = requests.get(
-    "https://your-replit-url.replit.dev/api/projects/agents-lextenso/prompts",
+    "https://prompting-manager.replit.app/api/projects/agents-research-agents/prompts",
     headers={"X-API-Key": "pk_your_api_key"}
 )
 
@@ -385,7 +385,7 @@ for prompt in prompts:
                   <TabsContent value="js-list">
                     <CodeBlock language="javascript" copyId="api-list-js">
 {`const response = await fetch(
-  'https://your-replit-url.replit.dev/api/projects/agents-lextenso/prompts',
+  'https://prompting-manager.replit.app/api/projects/agents-research-agents/prompts',
   {
     headers: {
       'X-API-Key': 'pk_your_api_key'

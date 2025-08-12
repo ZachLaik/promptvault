@@ -82,7 +82,7 @@ promptvault.configure(
 openai.api_key = "your_openai_key"
 
 # Use elegant syntax directly
-system_prompt = promptvault.agents_lextenso.research_manager
+system_prompt = promptvault.agents_research-agents.research_manager
 
 response = openai.ChatCompletion.create(
     model="gpt-4",

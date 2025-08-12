@@ -24,20 +24,20 @@ import PromptVault from 'promptvault-js';
 
 // Configure once
 const pv = new PromptVault({
-  baseUrl: 'https://your-replit-url.replit.dev',
+  baseUrl: 'https://prompting-manager.replit.app',
   apiKey: 'your_api_key'
 });
 
 // Method 1: Elegant dot notation (recommended)
-const prompt = await pv.agents_lextenso.research_manager();
+const prompt = await pv.agents_research-agents.research_manager();
 console.log(prompt.toString());
 
 // Method 2: Function call syntax
-const prompt2 = await pv.getPrompt('research-manager', 'agents-lextenso');
+const prompt2 = await pv.getPrompt('research-manager', 'agents-research-agents');
 console.log(prompt2.toString());
 
 // Method 3: With version specification
-const promptV1 = await pv.getPrompt('research-manager', 'agents-lextenso', 1);
+const promptV1 = await pv.getPrompt('research-manager', 'agents-research-agents', 1);
 
 // Method 4: Variable substitution
 const rendered = prompt.render({

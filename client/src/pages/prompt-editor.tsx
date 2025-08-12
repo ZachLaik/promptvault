@@ -330,7 +330,7 @@ export default function PromptEditor() {
                         <div className="mb-3">
                           <p className="text-xs text-gray-600 mb-2">GET Request:</p>
                           <code className="text-xs bg-white px-2 py-1 rounded border block mb-2 break-all font-mono">
-                            curl -X GET "https://your-replit-url.replit.dev/api/prompts/{promptSlug}?projectSlug={project.slug}" \<br/>
+                            curl -X GET "https://prompting-manager.replit.app/api/prompts/{promptSlug}?projectSlug={project.slug}" \<br/>
                             &nbsp;&nbsp;-H "X-API-Key: pk_your_api_key"
                           </code>
                         </div>
@@ -338,7 +338,7 @@ export default function PromptEditor() {
                         <div>
                           <p className="text-xs text-gray-600 mb-2">POST Request (Create/Update):</p>
                           <code className="text-xs bg-white px-2 py-1 rounded border block font-mono">
-                            {`curl -X POST "https://your-replit-url.replit.dev/api/prompts/${promptSlug}" \\
+                            {`curl -X POST "https://prompting-manager.replit.app/api/prompts/${promptSlug}" \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: pk_your_api_key" \\
   -d '{"projectSlug": "${project.slug}", "content": "Your prompt content...", "message": "Version message"}'`}
@@ -364,7 +364,7 @@ export default function PromptEditor() {
 
 # Configure
 promptvault.configure(
-    base_url="https://your-replit-url.replit.dev",
+    base_url="https://prompting-manager.replit.app",
     api_key="pk_your_api_key"
 )
 
@@ -401,7 +401,7 @@ rendered = prompt.render(
 
 // Configure
 const pv = new PromptVault({
-  baseUrl: 'https://your-replit-url.replit.dev',
+  baseUrl: 'https://prompting-manager.replit.app',
   apiKey: 'pk_your_api_key'
 });
 
@@ -430,7 +430,7 @@ const rendered = prompt.render({
                             {`import requests
 
 response = requests.get(
-    "https://your-replit-url.replit.dev/api/prompts/${promptSlug}",
+    "https://prompting-manager.replit.app/api/prompts/${promptSlug}",
     headers={"X-API-Key": "pk_your_api_key"},
     params={"projectSlug": "${project.slug}"}
 )
@@ -442,7 +442,7 @@ content = response.json()["content"]`}
                           <p className="text-xs text-gray-600 mb-2">JavaScript (fetch):</p>
                           <code className="text-xs bg-white px-2 py-1 rounded border block font-mono whitespace-pre-line">
                             {`const response = await fetch(
-  'https://your-replit-url.replit.dev/api/prompts/${promptSlug}?projectSlug=${project.slug}',
+  'https://prompting-manager.replit.app/api/prompts/${promptSlug}?projectSlug=${project.slug}',
   { headers: { 'X-API-Key': 'pk_your_api_key' } }
 );
 const data = await response.json();

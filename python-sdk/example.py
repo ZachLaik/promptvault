@@ -17,7 +17,7 @@ def main():
     # Method 1: Elegant dot notation (recommended)
     print("1. Using dot notation:")
     try:
-        prompt_template = promptvault.agents_lextenso.research_manager
+        prompt_template = promptvault.agents_research-agents.research_manager
         print(f"✅ Prompt template fetched successfully!")
         print(f"📝 Raw content preview: {str(prompt_template)[:100]}...")
         print(f"📊 Full length: {len(str(prompt_template))} characters\n")
@@ -38,7 +38,7 @@ def main():
     # Method 2: Function call syntax
     print("2. Using function syntax:")
     try:
-        prompt = promptvault.get_prompt("research-manager", "agents-lextenso")
+        prompt = promptvault.get_prompt("research-manager", "agents-research-agents")
         print(f"✅ Prompt fetched successfully!")
         print(f"📝 Content preview: {prompt[:100]}...")
         print(f"📊 Full length: {len(prompt)} characters\n")
@@ -48,7 +48,7 @@ def main():
     # Method 3: With version specification
     print("3. Getting specific version:")
     try:
-        prompt_v1 = promptvault.get_prompt("research-manager", "agents-lextenso", version=1)
+        prompt_v1 = promptvault.get_prompt("research-manager", "agents-research-agents", version=1)
         print(f"✅ Version 1 fetched successfully!")
         print(f"📝 Content preview: {prompt_v1[:100]}...")
         print(f"📊 Full length: {len(prompt_v1)} characters\n")

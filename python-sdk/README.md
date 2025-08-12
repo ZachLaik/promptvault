@@ -26,7 +26,7 @@ promptvault.configure(
 )
 
 # Use elegant dot notation to access prompts
-prompt_template = promptvault.agents_lextenso.research_manager
+prompt_template = promptvault.agents_research-agents.research_manager
 
 # Use as-is (backward compatible)
 print(prompt_template)
@@ -53,7 +53,7 @@ rendered_prompt = prompt_template.render(
 ### Get Specific Versions
 ```python
 # For specific versions, use the function syntax
-specific_prompt = promptvault.get_prompt("research-manager", "agents-lextenso", version=3)
+specific_prompt = promptvault.get_prompt("research-manager", "agents-research-agents", version=3)
 ```
 
 ### Environment Variables
@@ -95,7 +95,7 @@ promptvault.configure(base_url="...", api_key="...")
 openai.api_key = "your_openai_key"
 
 # Use prompt with variables
-template = promptvault.agents_lextenso.research_manager
+template = promptvault.agents_research-agents.research_manager
 system_prompt = template.render(
     expertise="contract law",
     focus_area="termination clauses",
@@ -114,7 +114,7 @@ print(response.choices[0].message.content)
 
 ## Naming Conventions
 
-- Project slugs like `agents-lextenso` become `agents_lextenso`
+- Project slugs like `agents-research-agents` become `agents_research-agents`
 - Prompt slugs like `research-manager` become `research_manager`
 - Underscores in Python are automatically converted to hyphens for the API
 

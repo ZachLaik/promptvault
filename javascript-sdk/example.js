@@ -17,7 +17,7 @@ async function main() {
   // Method 1: Elegant dot notation (recommended)
   console.log('1. Using dot notation:');
   try {
-    const promptTemplate = await pv.agents_lextenso.research_manager();
+    const promptTemplate = await pv.agents_research-agents.research_manager();
     console.log('✅ Prompt template fetched successfully!');
     console.log(`📝 Raw content preview: ${promptTemplate.toString().slice(0, 100)}...`);
     console.log(`📊 Full length: ${promptTemplate.toString().length} characters\n`);
@@ -40,7 +40,7 @@ async function main() {
   // Method 2: Function call syntax
   console.log('2. Using function syntax:');
   try {
-    const prompt = await pv.getPrompt('research-manager', 'agents-lextenso');
+    const prompt = await pv.getPrompt('research-manager', 'agents-research-agents');
     console.log('✅ Prompt fetched successfully!');
     console.log(`📝 Content preview: ${prompt.toString().slice(0, 100)}...`);
     console.log(`📊 Full length: ${prompt.toString().length} characters\n`);
@@ -51,7 +51,7 @@ async function main() {
   // Method 3: With version specification
   console.log('3. Getting specific version:');
   try {
-    const promptV1 = await pv.getPrompt('research-manager', 'agents-lextenso', 1);
+    const promptV1 = await pv.getPrompt('research-manager', 'agents-research-agents', 1);
     console.log('✅ Version 1 fetched successfully!');
     console.log(`📝 Content preview: ${promptV1.toString().slice(0, 100)}...`);
     console.log(`📊 Full length: ${promptV1.toString().length} characters\n`);
@@ -64,7 +64,7 @@ async function main() {
   try {
     const newVersion = await pv.createPromptVersion(
       'test-prompt',
-      'agents-lextenso',
+      'agents-research-agents',
       'This is a test prompt with ${variable} support',
       'Added variable support'
     );

@@ -7,15 +7,15 @@
  * 
  *   // Configure once
  *   const pv = new PromptVault({
- *     baseUrl: 'https://your-replit-url.replit.dev',
+ *     baseUrl: 'https://prompting-manager.replit.app',
  *     apiKey: 'your_api_key'
  *   });
  * 
  *   // Use elegant syntax to access prompts
- *   const prompt = await pv.agents_lextenso.research_manager();
+ *   const prompt = await pv.agents_research-agents.research_manager();
  * 
  *   // Or access with strings if needed
- *   const prompt = await pv.getPrompt('research-manager', 'agents-lextenso');
+ *   const prompt = await pv.getPrompt('research-manager', 'agents-research-agents');
  */
 
 class PromptTemplate {

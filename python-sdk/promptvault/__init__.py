@@ -6,15 +6,15 @@ Usage:
 
     # Configure once
     promptvault.configure(
-        base_url="https://your-replit-url.replit.dev",
+        base_url="https://prompting-manager.replit.app",
         api_key="your_api_key"
     )
 
     # Use elegant syntax to access prompts
-    prompt = promptvault.agents_lextenso.research_manager
+    prompt = promptvault.agents_research-agents.research_manager
 
     # Or access with strings if needed
-    prompt = promptvault.get_prompt("research-manager", "agents-lextenso")
+    prompt = promptvault.get_prompt("research-manager", "agents-research-agents")
 """
 
 import os

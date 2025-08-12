@@ -36,6 +36,7 @@ export default function PromptEditor() {
 
   const [currentContent, setCurrentContent] = useState("");
   const [message, setMessage] = useState("");
+  const [activeApiTab, setActiveApiTab] = useState("curl");
 
   const { data: project } = useQuery<Project>({
     queryKey: [`/api/projects/${projectId}`],
@@ -279,14 +280,178 @@ export default function PromptEditor() {
               <div className="border-t border-gray-200 p-4">
                 <h4 className="text-sm font-medium text-gray-900 mb-3">API Usage</h4>
                 <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-xs text-gray-600 mb-2">GET Request:</p>
-                  <code className="text-xs bg-white px-2 py-1 rounded border block mb-2 break-all">
-                    /api/prompts/{promptSlug}?projectSlug={project.slug}
-                  </code>
-                  <p className="text-xs text-gray-600 mb-1">Headers:</p>
-                  <code className="text-xs bg-white px-2 py-1 rounded border block break-all">
-                    X-API-Key: pk_...
-                  </code>
+                  <div className="flex border-b border-gray-200 mb-3">
+                    <button 
+                      className={`px-3 py-1 text-xs font-medium rounded-t ${
+                        activeApiTab === 'curl' 
+                          ? 'text-gray-700 border-b-2 border-blue-500 bg-white' 
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                      onClick={() => setActiveApiTab('curl')}
+                    >
+                      cURL
+                    </button>
+                    <button 
+                      className={`px-3 py-1 text-xs font-medium ml-1 rounded-t ${
+                        activeApiTab === 'python' 
+                          ? 'text-gray-700 border-b-2 border-blue-500 bg-white' 
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                      onClick={() => setActiveApiTab('python')}
+                    >
+                      Python SDK
+                    </button>
+                    <button 
+                      className={`px-3 py-1 text-xs font-medium ml-1 rounded-t ${
+                        activeApiTab === 'javascript' 
+                          ? 'text-gray-700 border-b-2 border-blue-500 bg-white' 
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                      onClick={() => setActiveApiTab('javascript')}
+                    >
+                      JavaScript SDK
+                    </button>
+                    <button 
+                      className={`px-3 py-1 text-xs font-medium ml-1 rounded-t ${
+                        activeApiTab === 'http' 
+                          ? 'text-gray-700 border-b-2 border-blue-500 bg-white' 
+                          : 'text-gray-500 hover:text-gray-700'
+                      }`}
+                      onClick={() => setActiveApiTab('http')}
+                    >
+                      Raw HTTP
+                    </button>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {/* cURL Tab */}
+                    {activeApiTab === 'curl' && (
+                      <div>
+                        <div className="mb-3">
+                          <p className="text-xs text-gray-600 mb-2">GET Request:</p>
+                          <code className="text-xs bg-white px-2 py-1 rounded border block mb-2 break-all font-mono">
+                            curl -X GET "https://your-replit-url.replit.dev/api/prompts/{promptSlug}?projectSlug={project.slug}" \<br/>
+                            &nbsp;&nbsp;-H "X-API-Key: pk_your_api_key"
+                          </code>
+                        </div>
+                        
+                        <div>
+                          <p className="text-xs text-gray-600 mb-2">POST Request (Create/Update):</p>
+                          <code className="text-xs bg-white px-2 py-1 rounded border block font-mono">
+                            curl -X POST "https://your-replit-url.replit.dev/api/prompts/{promptSlug}" \<br/>
+                            &nbsp;&nbsp;-H "Content-Type: application/json" \<br/>
+                            &nbsp;&nbsp;-H "X-API-Key: pk_your_api_key" \<br/>
+                            &nbsp;&nbsp;-d '{{"projectSlug": "{project.slug}", "content": "Your prompt content...", "message": "Version message"}}'
+                          </code>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Python SDK Tab */}
+                    {activeApiTab === 'python' && (
+                      <div>
+                        <div className="mb-3">
+                          <p className="text-xs text-gray-600 mb-2">Install SDK:</p>
+                          <code className="text-xs bg-white px-2 py-1 rounded border block mb-2 font-mono">
+                            pip install git+https://github.com/your-repo/promptvault.git#subdirectory=python-sdk
+                          </code>
+                        </div>
+                        
+                        <div>
+                          <p className="text-xs text-gray-600 mb-2">Usage:</p>
+                          <code className="text-xs bg-white px-2 py-1 rounded border block font-mono whitespace-pre-line">
+                            {`import promptvault
+
+# Configure
+promptvault.configure(
+    base_url="https://your-replit-url.replit.dev",
+    api_key="pk_your_api_key"
+)
+
+# Method 1: Dot notation (recommended)
+prompt = promptvault.${project.slug.replace('-', '_')}.${promptSlug.replace('-', '_')}
+print(str(prompt))
+
+# Method 2: Function call syntax
+prompt = promptvault.get_prompt("${promptSlug}", "${project.slug}")
+
+# Method 3: With variables
+rendered = prompt.render(
+    variable_name="value"
+)`}
+                          </code>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* JavaScript SDK Tab */}
+                    {activeApiTab === 'javascript' && (
+                      <div>
+                        <div className="mb-3">
+                          <p className="text-xs text-gray-600 mb-2">Install SDK:</p>
+                          <code className="text-xs bg-white px-2 py-1 rounded border block mb-2 font-mono">
+                            npm install git+https://github.com/your-repo/promptvault.git#main:javascript-sdk
+                          </code>
+                        </div>
+                        
+                        <div>
+                          <p className="text-xs text-gray-600 mb-2">Usage:</p>
+                          <code className="text-xs bg-white px-2 py-1 rounded border block font-mono whitespace-pre-line">
+                            {`import PromptVault from 'promptvault-js';
+
+// Configure
+const pv = new PromptVault({
+  baseUrl: 'https://your-replit-url.replit.dev',
+  apiKey: 'pk_your_api_key'
+});
+
+// Method 1: Dot notation (recommended)
+const prompt = await pv.${project.slug.replace('-', '_')}.${promptSlug.replace('-', '_')}();
+console.log(prompt.toString());
+
+// Method 2: Function call syntax
+const prompt2 = await pv.getPrompt('${promptSlug}', '${project.slug}');
+
+// Method 3: With variables
+const rendered = prompt.render({
+  variable_name: 'value'
+});`}
+                          </code>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Raw HTTP Tab */}
+                    {activeApiTab === 'http' && (
+                      <div>
+                        <div className="mb-3">
+                          <p className="text-xs text-gray-600 mb-2">Python (requests):</p>
+                          <code className="text-xs bg-white px-2 py-1 rounded border block mb-2 font-mono whitespace-pre-line">
+                            {`import requests
+
+response = requests.get(
+    "https://your-replit-url.replit.dev/api/prompts/${promptSlug}",
+    headers={"X-API-Key": "pk_your_api_key"},
+    params={"projectSlug": "${project.slug}"}
+)
+content = response.json()["content"]`}
+                          </code>
+                        </div>
+                        
+                        <div>
+                          <p className="text-xs text-gray-600 mb-2">JavaScript (fetch):</p>
+                          <code className="text-xs bg-white px-2 py-1 rounded border block font-mono whitespace-pre-line">
+                            {`const response = await fetch(
+  'https://your-replit-url.replit.dev/api/prompts/${promptSlug}?projectSlug=${project.slug}',
+  { headers: { 'X-API-Key': 'pk_your_api_key' } }
+);
+const data = await response.json();
+console.log(data.content);`}
+                          </code>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </Card>

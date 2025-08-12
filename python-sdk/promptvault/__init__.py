@@ -34,7 +34,7 @@ def configure(base_url: str, api_key: str):
     Configure PromptVault with your API credentials
 
     Args:
-        base_url: Your Prompt Manager base URL (e.g., "https://prompting-manager.replit.app")
+        base_url: Your Prompt Manager base URL (e.g., "https://your-app.replit.dev")
         api_key: Your API key from the Prompt Manager
     """
     global _config

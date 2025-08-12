@@ -1,89 +1,583 @@
 
-# PromptVault Integration Guide for AI Agents
+# PromptVault Integration Instructions for AI Agents
 
-## Setup & Authentication
+## Overview
+This document provides complete instructions for AI agents to automatically integrate PromptVault into any codebase, identify existing prompts, migrate them to PromptVault, and replace them with API calls.
 
-1. **Install SDK**
-   - Python: `pip install git+https://github.com/ZachLaik/promptvault.git#subdirectory=python-sdk`
-   - JavaScript: `npm install git+https://github.com/ZachLaik/promptvault.git#main:javascript-sdk`
+## Step 1: Initial Setup and API Key Configuration
 
-2. **Get API Credentials**
-   - Ask user for Base URL (e.g., "https://prompting-manager.replit.app")
-   - Ask user for API Key (format: "pk_...")
+### 1.1 Identify Programming Language
+First, determine the primary programming language(s) used in the codebase by examining file extensions and package managers:
+- Python: Look for `.py` files, `requirements.txt`, `pyproject.toml`, `setup.py`
+- JavaScript/Node.js: Look for `.js`, `.ts` files, `package.json`, `node_modules/`
+- Other languages: Adapt accordingly
 
-## Core API Endpoints
+### 1.2 Install PromptVault SDK
+For Python projects:
+```bash
+pip install git+https://github.com/ZachLaik/promptvault.git#subdirectory=python-sdk
+```
 
-**Authentication Header:** `x-api-key: pk_your_api_key`
+For JavaScript/Node.js projects:
+```bash
+npm install git+https://github.com/ZachLaik/promptvault.git#main:javascript-sdk
+```
 
+### 1.3 Request API Credentials from User
+Ask the user to provide:
+1. **Base URL**: The PromptVault instance URL (e.g., "https://your-app.replit.dev")
+2. **API Key**: Their API key (format: "pk_...")
+
+You can guide them to get these by:
+1. Logging into their PromptVault instance
+2. Going to API Keys section
+3. Generating a new API key
+
+## Step 2: Identify Existing Prompts in Codebase
+
+### 2.1 Common Prompt Patterns to Look For
+Search for these patterns across all code files:
+
+#### AI/LLM API Calls:
+- OpenAI: `openai.ChatCompletion.create()`, `client.chat.completions.create()`
+- Anthropic: `anthropic.messages.create()`
+- Google: `genai.GenerativeModel().generate_content()`
+- Generic: Look for "system", "user", "assistant" message patterns
+
+#### String Patterns:
+- Multi-line strings containing AI instructions
+- Variables named like: `prompt`, `system_prompt`, `instruction`, `template`
+- Strings starting with: "You are a", "Act as a", "Your role is"
+- Template strings with placeholders: `{variable}`, `${variable}`, `%s`, `f"{variable}"`
+
+#### File Patterns:
+- `.txt` files in prompts/templates directories
+- `.md` files containing AI instructions
+- JSON/YAML files with prompt configurations
+
+### 2.2 Extract Prompt Information
+For each identified prompt, extract:
+- **Content**: The actual prompt text
+- **Context**: Where it's used (function name, file path)
+- **Variables**: Any template variables or parameters
+- **Purpose**: Infer from context (e.g., "code_reviewer", "data_analyzer")
+
+## Step 3: PromptVault API Documentation
+
+### 3.1 Authentication
+All API requests require authentication via header:
+```
+x-api-key: pk_your_api_key_here
+```
+
+### 3.2 Core API Endpoints
+
+#### Create Project
 ```http
 POST /api/projects
-{"name": "Project Name", "description": "Description"}
+Content-Type: application/json
+x-api-key: pk_your_api_key
 
-POST /api/prompts
-{"projectSlug": "project-name", "slug": "prompt-slug", "title": "Title"}
-
-POST /api/prompts/{slug}
-{"content": "Prompt with {variables}", "message": "Version message", "projectSlug": "project-name"}
-
-GET /api/prompts/{slug}?projectSlug=project-name
+{
+  "name": "Project Name",
+  "description": "Project description"
+}
 ```
 
-## SDK Usage
+Response:
+```json
+{
+  "id": 1,
+  "name": "Project Name",
+  "slug": "project-name",
+  "description": "Project description"
+}
+```
 
-**Python:**
+#### Create Prompt
+```http
+POST /api/prompts
+Content-Type: application/json
+x-api-key: pk_your_api_key
+
+{
+  "projectSlug": "project-name",
+  "slug": "prompt-slug",
+  "title": "Prompt Title",
+  "description": "Prompt description"
+}
+```
+
+#### Create Prompt Version (Upload Content)
+```http
+POST /api/prompts/{slug}
+Content-Type: application/json
+x-api-key: pk_your_api_key
+
+{
+  "content": "Your prompt content here with {variables}",
+  "message": "Initial version",
+  "projectSlug": "project-name"
+}
+```
+
+#### Retrieve Prompt
+```http
+GET /api/prompts/{slug}?projectSlug=project-name&version=1
+x-api-key: pk_your_api_key
+```
+
+Response:
+```json
+{
+  "id": 1,
+  "content": "Your prompt content with {variables}",
+  "version": 1,
+  "slug": "prompt-slug"
+}
+```
+
+### 3.3 SDK Usage Examples
+
+#### Python SDK
 ```python
 import promptvault
-promptvault.configure(base_url="...", api_key="pk_...")
 
-# Access prompts
-prompt = promptvault.project_name.prompt_slug
-rendered = prompt.render(variable="value")
+# Configure once
+promptvault.configure(
+    base_url="https://your-app.replit.dev",
+    api_key="pk_your_api_key"
+)
+
+# Access prompts with dot notation
+prompt_template = promptvault.project_name.prompt_slug
+
+# Use as string (backward compatible)
+system_prompt = str(prompt_template)
+
+# Render with variables
+rendered = prompt_template.render(
+    user_name="John",
+    task="analyze data"
+)
+
+# Function syntax for specific versions
+specific_prompt = promptvault.get_prompt("prompt-slug", "project-name", version=2)
 ```
 
-**JavaScript:**
+#### JavaScript SDK
 ```javascript
 import PromptVault from 'promptvault-js';
-const pv = new PromptVault({baseUrl: "...", apiKey: "pk_..."});
 
-const prompt = await pv.project_name.prompt_slug();
-const rendered = prompt.render({variable: "value"});
+const pv = new PromptVault({
+  baseUrl: 'https://your-app.replit.dev',
+  apiKey: 'pk_your_api_key'
+});
+
+// Dot notation (async)
+const promptTemplate = await pv.project_name.prompt_slug();
+
+// Use as string
+console.log(promptTemplate.toString());
+
+// Render with variables (uses ${variable} syntax)
+const rendered = promptTemplate.render({
+  user_name: 'John',
+  task: 'analyze data'
+});
+
+// Function syntax
+const prompt = await pv.getPrompt('prompt-slug', 'project-name');
 ```
 
-## Migration Process
+## Step 4: Automated Migration Process
 
-1. **Find Prompts:** Look for AI API calls, multi-line strings with "You are", template variables
-2. **Create Project:** Use repository name or ask user
-3. **Upload Prompts:** Create slugs from context (e.g., "code_reviewer", "data_analyzer")
-4. **Replace Code:** 
-   - Before: `system_prompt = "You are..."`
-   - After: `system_prompt = promptvault.project.prompt_name.render(vars)`
+### 4.1 Create Project Structure
+1. Create a main project for the codebase (use repository name or ask user)
+2. Optionally create sub-projects for different modules/components
 
-## Configuration
+### 4.2 Upload Prompts to PromptVault
+For each identified prompt:
 
-**Environment Variables (Recommended):**
+```python
+# Example Python automation script
+import requests
+import promptvault
+
+def upload_prompt_to_vault(base_url, api_key, project_slug, prompt_slug, title, content, description=""):
+    # Create prompt
+    response = requests.post(
+        f"{base_url}/api/prompts",
+        headers={"x-api-key": api_key, "Content-Type": "application/json"},
+        json={
+            "projectSlug": project_slug,
+            "slug": prompt_slug,
+            "title": title,
+            "description": description
+        }
+    )
+    
+    if response.status_code in [200, 201]:
+        # Upload content
+        content_response = requests.post(
+            f"{base_url}/api/prompts/{prompt_slug}",
+            headers={"x-api-key": api_key, "Content-Type": "application/json"},
+            json={
+                "content": content,
+                "message": "Migrated from codebase",
+                "projectSlug": project_slug
+            }
+        )
+        return content_response.status_code in [200, 201]
+    return False
+```
+
+### 4.3 Generate Slug Names
+Convert prompt contexts to valid slugs:
+- Remove special characters
+- Convert to lowercase
+- Replace spaces with hyphens
+- Examples: "Code Reviewer" → "code-reviewer", "Data Analyzer" → "data-analyzer"
+
+## Step 5: Code Replacement Patterns
+
+### 5.1 Python Replacements
+
+#### Before (OpenAI example):
+```python
+system_prompt = """You are a code reviewer. 
+Analyze the following code and provide feedback on:
+- Code quality
+- Potential bugs
+- Performance improvements
+
+Code to review: {code}
+User context: {context}"""
+
+response = openai.ChatCompletion.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": system_prompt.format(code=user_code, context=user_context)},
+        {"role": "user", "content": user_message}
+    ]
+)
+```
+
+#### After:
+```python
+import promptvault
+
+# Configure at top of file or in config
+promptvault.configure(
+    base_url="https://your-app.replit.dev",
+    api_key="pk_your_api_key"
+)
+
+# Replace prompt usage
+system_prompt = promptvault.main_project.code_reviewer.render(
+    code=user_code,
+    context=user_context
+)
+
+response = openai.ChatCompletion.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_message}
+    ]
+)
+```
+
+### 5.2 JavaScript Replacements
+
+#### Before:
+```javascript
+const systemPrompt = `You are a helpful assistant.
+Help the user with: ${task}
+User preference: ${preference}`;
+
+const response = await openai.chat.completions.create({
+  model: "gpt-4",
+  messages: [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userMessage }
+  ]
+});
+```
+
+#### After:
+```javascript
+import PromptVault from 'promptvault-js';
+
+const pv = new PromptVault({
+  baseUrl: 'https://your-app.replit.dev',
+  apiKey: 'pk_your_api_key'
+});
+
+const systemPrompt = (await pv.main_project.helpful_assistant()).render({
+  task: task,
+  preference: preference
+});
+
+const response = await openai.chat.completions.create({
+  model: "gpt-4",
+  messages: [
+    { role: "system", content: systemPrompt },
+    { role: "user", content: userMessage }
+  ]
+});
+```
+
+## Step 6: Configuration Management
+
+### 6.1 Environment Variables (Recommended)
+Create/update environment configuration:
+
 ```bash
-PROMPTVAULT_BASE_URL=https://prompting-manager.replit.app
+# .env file
+PROMPTVAULT_BASE_URL=https://your-app.replit.dev
 PROMPTVAULT_API_KEY=pk_your_api_key
 ```
 
-**Python:**
 ```python
+# Python configuration
 import os
+import promptvault
+
 promptvault.configure(
     base_url=os.getenv("PROMPTVAULT_BASE_URL"),
     api_key=os.getenv("PROMPTVAULT_API_KEY")
 )
 ```
 
-## Error Handling
-
-```python
-try:
-    prompt = promptvault.project.prompt_name
-    rendered = prompt.render(data=value)
-except Exception as e:
-    # Handle gracefully, implement fallback
-    pass
+```javascript
+// JavaScript configuration
+const pv = new PromptVault({
+  baseUrl: process.env.PROMPTVAULT_BASE_URL,
+  apiKey: process.env.PROMPTVAULT_API_KEY
+});
 ```
 
-That's it! The SDK handles caching, versioning, and team collaboration automatically.
+### 6.2 Config File Approach
+Create a dedicated config file:
+
+```python
+# config/promptvault.py
+import promptvault
+
+def setup_promptvault():
+    promptvault.configure(
+        base_url="https://your-app.replit.dev",
+        api_key="pk_your_api_key"
+    )
+```
+
+## Step 7: Testing and Validation
+
+### 7.1 Create Test Script
+
+#### Python Test Script:
+```python
+import promptvault
+import sys
+
+def test_promptvault_integration():
+    """Test all migrated prompts"""
+    
+    # Configure
+    promptvault.configure(
+        base_url="https://your-app.replit.dev",
+        api_key="pk_your_api_key"
+    )
+    
+    # Test cases - replace with your actual prompts
+    test_cases = [
+        {
+            "name": "code_reviewer",
+            "project": "main_project",
+            "test_vars": {"code": "def test(): pass", "context": "unit test"}
+        },
+        {
+            "name": "data_analyzer", 
+            "project": "main_project",
+            "test_vars": {"data": "sample data", "format": "json"}
+        }
+    ]
+    
+    passed = 0
+    failed = 0
+    
+    for test in test_cases:
+        try:
+            # Test dot notation access
+            prompt_template = getattr(
+                getattr(promptvault, test["project"]), 
+                test["name"]
+            )
+            
+            # Test string conversion
+            content = str(prompt_template)
+            assert len(content) > 0, "Empty prompt content"
+            
+            # Test variable rendering if variables provided
+            if test["test_vars"]:
+                rendered = prompt_template.render(**test["test_vars"])
+                assert len(rendered) > 0, "Empty rendered content"
+                
+                # Check that variables were substituted
+                for var_name in test["test_vars"].keys():
+                    placeholder = f"{{{var_name}}}"
+                    assert placeholder not in rendered, f"Variable {var_name} not substituted"
+            
+            print(f"✅ {test['project']}.{test['name']}: PASSED")
+            passed += 1
+            
+        except Exception as e:
+            print(f"❌ {test['project']}.{test['name']}: FAILED - {str(e)}")
+            failed += 1
+    
+    print(f"\nTest Results: {passed} passed, {failed} failed")
+    return failed == 0
+
+if __name__ == "__main__":
+    success = test_promptvault_integration()
+    sys.exit(0 if success else 1)
+```
+
+#### JavaScript Test Script:
+```javascript
+import PromptVault from 'promptvault-js';
+
+async function testPromptVaultIntegration() {
+    const pv = new PromptVault({
+        baseUrl: 'https://your-app.replit.dev',
+        apiKey: 'pk_your_api_key'
+    });
+
+    const testCases = [
+        {
+            name: 'code_reviewer',
+            project: 'main_project',
+            testVars: { code: 'function test() {}', context: 'unit test' }
+        }
+    ];
+
+    let passed = 0;
+    let failed = 0;
+
+    for (const test of testCases) {
+        try {
+            // Test access
+            const promptTemplate = await pv[test.project][test.name]();
+            
+            // Test string conversion
+            const content = promptTemplate.toString();
+            if (content.length === 0) throw new Error('Empty prompt content');
+            
+            // Test variable rendering
+            if (test.testVars) {
+                const rendered = promptTemplate.render(test.testVars);
+                if (rendered.length === 0) throw new Error('Empty rendered content');
+                
+                // Check variable substitution
+                for (const [varName, value] of Object.entries(test.testVars)) {
+                    const placeholder = `\${${varName}}`;
+                    if (rendered.includes(placeholder)) {
+                        throw new Error(`Variable ${varName} not substituted`);
+                    }
+                }
+            }
+            
+            console.log(`✅ ${test.project}.${test.name}: PASSED`);
+            passed++;
+            
+        } catch (error) {
+            console.log(`❌ ${test.project}.${test.name}: FAILED - ${error.message}`);
+            failed++;
+        }
+    }
+    
+    console.log(`\nTest Results: ${passed} passed, ${failed} failed`);
+    return failed === 0;
+}
+
+testPromptVaultIntegration()
+    .then(success => process.exit(success ? 0 : 1))
+    .catch(error => {
+        console.error('Test runner error:', error);
+        process.exit(1);
+    });
+```
+
+### 7.2 Integration Validation
+After migration, validate:
+
+1. **All prompts accessible**: Every replaced prompt can be fetched
+2. **Variable substitution works**: Template variables render correctly  
+3. **Backward compatibility**: Existing functionality unchanged
+4. **Performance**: Response times are acceptable
+5. **Error handling**: Graceful failure modes
+
+## Step 8: Final Steps and Best Practices
+
+### 8.1 Documentation Updates
+1. Update README.md with PromptVault integration info
+2. Document environment variables needed
+3. Add troubleshooting section
+
+### 8.2 Error Handling
+Implement robust error handling:
+
+```python
+# Python error handling
+try:
+    prompt = promptvault.main_project.my_prompt
+    rendered = prompt.render(user_data=data)
+except ValueError as e:
+    # Configuration or prompt not found
+    print(f"PromptVault error: {e}")
+    # Fallback to hardcoded prompt or error gracefully
+except Exception as e:
+    # Network or other errors
+    print(f"Unexpected error: {e}")
+    # Implement fallback strategy
+```
+
+### 8.3 Monitoring and Logging
+Add logging for PromptVault operations:
+
+```python
+import logging
+
+logger = logging.getLogger(__name__)
+
+def get_prompt_safely(project, prompt_name, **variables):
+    try:
+        prompt_template = getattr(getattr(promptvault, project), prompt_name)
+        rendered = prompt_template.render(**variables)
+        logger.info(f"Retrieved prompt {project}.{prompt_name}")
+        return rendered
+    except Exception as e:
+        logger.error(f"Failed to get prompt {project}.{prompt_name}: {e}")
+        raise
+```
+
+### 8.4 Performance Considerations
+- PromptVault SDK includes caching for performance
+- Consider implementing local fallbacks for critical prompts
+- Monitor API response times
+
+## Summary Checklist for AI Agents
+
+1. ✅ Identify programming language and install appropriate SDK
+2. ✅ Get API credentials from user  
+3. ✅ Scan codebase for existing prompts using pattern recognition
+4. ✅ Create project structure in PromptVault
+5. ✅ Upload all identified prompts to PromptVault via API
+6. ✅ Replace hardcoded prompts with PromptVault SDK calls
+7. ✅ Set up configuration management (environment variables)
+8. ✅ Create and run test script to validate integration
+9. ✅ Add error handling and logging
+10. ✅ Update documentation
+
+This systematic approach ensures complete migration while maintaining code functionality and adding the benefits of centralized prompt management, versioning, and team collaboration.

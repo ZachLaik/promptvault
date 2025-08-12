@@ -8,7 +8,7 @@ import promptvault
 def main():
     # Configure the client with your Prompt Manager
     promptvault.configure(
-        base_url="https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev",
+        base_url="https://prompting-manager.replit.app",
         api_key="pk_752b437b3cfa01f9913a930c9734bcb600db30a1606fa291a3a67140b8be4978"
     )
     

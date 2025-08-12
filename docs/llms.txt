@@ -81,7 +81,7 @@ import os
 
 # Configure once
 promptvault.configure(
-    base_url="https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev",
+    base_url="https://prompting-manager.replit.app",
     api_key=os.getenv("PROMPTVAULT_API_KEY")
 )
 
@@ -101,7 +101,7 @@ rendered = system_prompt.render(
 import requests
 import os
 
-BASE_URL = "https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev"
+BASE_URL = "https://prompting-manager.replit.app"
 
 def get_prompt(slug, project_slug):
     response = requests.get(
@@ -255,4 +255,4 @@ pip install git+https://github.com/ZachLaik/promptvault.git#subdirectory=python-
 
 Ready to transform your codebase with centralized prompt management? Let's get started! 🎯
 
-Base URL: https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev
+Base URL: https://prompting-manager.replit.app

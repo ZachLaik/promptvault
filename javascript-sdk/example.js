@@ -8,7 +8,7 @@ import PromptVault from './promptvault.js';
 async function main() {
   // Configure the client with your Prompt Manager
   const pv = new PromptVault({
-    baseUrl: 'https://c8c51686-0d9b-4c30-bcd2-157601544ed8-00-gf8yvovkz2td.riker.replit.dev',
+    baseUrl: 'https://prompting-manager.replit.app',
     apiKey: 'pk_752b437b3cfa01f9913a930c9734bcb600db30a1606fa291a3a67140b8be4978'
   });
 

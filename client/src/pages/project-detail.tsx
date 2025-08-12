@@ -135,6 +135,99 @@ export default function ProjectDetail() {
             </CardContent>
           </Card>
           
+          {/* API Usage Section */}
+          <Card className="mb-6">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">API Usage</h2>
+              <p className="text-sm text-gray-600 mt-1">Access all prompts from this project programmatically</p>
+            </div>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Python */}
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-3 flex items-center">
+                    <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                    Python SDK
+                  </h3>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <code className="text-sm font-mono text-gray-800 block whitespace-pre-wrap">
+{`import promptvault
+
+# Configure once
+promptvault.configure(
+    base_url="https://your-replit-url.replit.dev",
+    api_key="pk_your_api_key"
+)
+
+# Get all prompts from project
+prompts = promptvault.get_project_prompts("${project.slug}")
+for prompt in prompts:
+    print(f"{prompt['slug']}: {prompt['title']}")
+
+# Or use individual prompts
+${prompts.map(prompt => `prompt = promptvault.${project.slug.replace('-', '_')}.${prompt.slug.replace('-', '_')}`).slice(0, 2).join('\n')}`}
+                    </code>
+                  </div>
+                </div>
+
+                {/* JavaScript */}
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-3 flex items-center">
+                    <span className="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                    JavaScript SDK
+                  </h3>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <code className="text-sm font-mono text-gray-800 block whitespace-pre-wrap">
+{`import PromptVault from 'promptvault-js';
+
+const pv = new PromptVault({
+  baseUrl: 'https://your-replit-url.replit.dev',
+  apiKey: 'pk_your_api_key'
+});
+
+// Get all prompts from project
+const prompts = await pv.getProjectPrompts('${project.slug}');
+prompts.forEach(prompt => {
+  console.log(\`\${prompt.slug}: \${prompt.title}\`);
+});
+
+// Or use individual prompts
+${prompts.map(prompt => `const prompt = await pv.${project.slug.replace('-', '_')}.${prompt.slug.replace('-', '_')}();`).slice(0, 2).join('\n')}`}
+                    </code>
+                  </div>
+                </div>
+
+                {/* Direct API */}
+                <div className="lg:col-span-2">
+                  <h3 className="font-medium text-gray-900 mb-3 flex items-center">
+                    <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                    Direct HTTP API
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-600 mb-2">List all prompts:</p>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <code className="text-xs font-mono text-gray-800 block">
+                          GET /api/projects/{project.slug}/prompts<br/>
+                          Headers: X-API-Key: pk_...
+                        </code>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-600 mb-2">Get specific prompt:</p>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <code className="text-xs font-mono text-gray-800 block">
+                          GET /api/prompts/[slug]?projectSlug={project.slug}<br/>
+                          Headers: X-API-Key: pk_...
+                        </code>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Prompts Table */}
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">

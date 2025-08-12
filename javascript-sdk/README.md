@@ -78,7 +78,7 @@ For browser usage, you may need to handle CORS and use a bundler like Webpack or
   import PromptVault from './promptvault.js';
   
   const pv = new PromptVault({
-    baseUrl: 'https://your-app.replit.dev',
+    baseUrl: 'https://prompting-manager.replit.app',
     apiKey: 'your_api_key'
   });
   

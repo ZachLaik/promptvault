@@ -25,7 +25,7 @@ npm install git+https://github.com/ZachLaik/promptvault.git#main:javascript-sdk
 
 ### 1.3 Request API Credentials from User
 Ask the user to provide:
-1. **Base URL**: The PromptVault instance URL (e.g., "https://your-app.replit.dev")
+1. **Base URL**: The PromptVault instance URL (e.g., "https://prompting-manager.replit.app")
 2. **API Key**: Their API key (format: "pk_...")
 
 You can guide them to get these by:
@@ -145,7 +145,7 @@ import promptvault
 
 # Configure once
 promptvault.configure(
-    base_url="https://your-app.replit.dev",
+    base_url="https://prompting-manager.replit.app",
     api_key="pk_your_api_key"
 )
 
@@ -170,7 +170,7 @@ specific_prompt = promptvault.get_prompt("prompt-slug", "project-name", version=
 import PromptVault from 'promptvault-js';
 
 const pv = new PromptVault({
-  baseUrl: 'https://your-app.replit.dev',
+  baseUrl: 'https://prompting-manager.replit.app',
   apiKey: 'pk_your_api_key'
 });
 
@@ -269,7 +269,7 @@ import promptvault
 
 # Configure at top of file or in config
 promptvault.configure(
-    base_url="https://your-app.replit.dev",
+    base_url="https://prompting-manager.replit.app",
     api_key="pk_your_api_key"
 )
 
@@ -310,7 +310,7 @@ const response = await openai.chat.completions.create({
 import PromptVault from 'promptvault-js';
 
 const pv = new PromptVault({
-  baseUrl: 'https://your-app.replit.dev',
+  baseUrl: 'https://prompting-manager.replit.app',
   apiKey: 'pk_your_api_key'
 });
 
@@ -335,7 +335,7 @@ Create/update environment configuration:
 
 ```bash
 # .env file
-PROMPTVAULT_BASE_URL=https://your-app.replit.dev
+PROMPTVAULT_BASE_URL=https://prompting-manager.replit.app
 PROMPTVAULT_API_KEY=pk_your_api_key
 ```
 
@@ -367,7 +367,7 @@ import promptvault
 
 def setup_promptvault():
     promptvault.configure(
-        base_url="https://your-app.replit.dev",
+        base_url="https://prompting-manager.replit.app",
         api_key="pk_your_api_key"
     )
 ```
@@ -386,7 +386,7 @@ def test_promptvault_integration():
     
     # Configure
     promptvault.configure(
-        base_url="https://your-app.replit.dev",
+        base_url="https://prompting-manager.replit.app",
         api_key="pk_your_api_key"
     )
     
@@ -450,7 +450,7 @@ import PromptVault from 'promptvault-js';
 
 async function testPromptVaultIntegration() {
     const pv = new PromptVault({
-        baseUrl: 'https://your-app.replit.dev',
+        baseUrl: 'https://prompting-manager.replit.app',
         apiKey: 'pk_your_api_key'
     });
 

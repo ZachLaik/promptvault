@@ -178,6 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
    *     tags: [Projects]
    *     security:
    *       - sessionAuth: []
+   *       - apiKeyAuth: []
    *     responses:
    *       200:
    *         description: List of user projects
@@ -209,7 +210,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/projects", authenticateSession, async (req: AuthenticatedRequest, res) => {
+  /**
+   * @swagger
+   * /api/projects:
+   *   post:
+   *     summary: Create a new project
+   *     tags: [Projects]
+   *     security:
+   *       - sessionAuth: []
+   *       - apiKeyAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CreateProjectRequest'
+   *     responses:
+   *       200:
+   *         description: Project created successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Project'
+   *       400:
+   *         description: Invalid input or slug already exists
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       401:
+   *         description: Authentication required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
+  app.post("/api/projects", authenticateEither, async (req: AuthenticatedRequest, res) => {
     try {
       const data = insertProjectSchema.omit({ ownerId: true }).parse(req.body);
 

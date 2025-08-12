@@ -20,7 +20,7 @@ import promptvault
 
 # Configure once
 promptvault.configure(
-    base_url="https://your-promptvault-instance.replit.dev",
+    base_url="https://prompting-manager.replit.app",
     api_key="pk_your_api_key"
 )
 

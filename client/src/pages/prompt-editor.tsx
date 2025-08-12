@@ -338,10 +338,10 @@ export default function PromptEditor() {
                         <div>
                           <p className="text-xs text-gray-600 mb-2">POST Request (Create/Update):</p>
                           <code className="text-xs bg-white px-2 py-1 rounded border block font-mono">
-                            curl -X POST "https://your-replit-url.replit.dev/api/prompts/{promptSlug}" \<br/>
-                            &nbsp;&nbsp;-H "Content-Type: application/json" \<br/>
-                            &nbsp;&nbsp;-H "X-API-Key: pk_your_api_key" \<br/>
-                            &nbsp;&nbsp;-d '{{"projectSlug": "{project.slug}", "content": "Your prompt content...", "message": "Version message"}}'
+                            {`curl -X POST "https://your-replit-url.replit.dev/api/prompts/${promptSlug}" \\
+  -H "Content-Type: application/json" \\
+  -H "X-API-Key: pk_your_api_key" \\
+  -d '{"projectSlug": "${project.slug}", "content": "Your prompt content...", "message": "Version message"}'`}
                           </code>
                         </div>
                       </div>

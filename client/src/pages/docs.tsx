@@ -45,6 +45,23 @@ export default function DocsPage() {
         <div className="mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">PromptVault Documentation</h1>
           <p className="text-xl text-gray-600">Learn how to integrate PromptVault into your applications with our SDKs and REST API</p>
+          
+          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-blue-600" />
+              <span className="font-semibold text-blue-900">For AI Agents & Lazy Developers</span>
+            </div>
+            <p className="text-sm text-blue-800 mt-1">
+              Complete integration instructions for AI agents: 
+              <a 
+                href="/docs/llms.txt" 
+                target="_blank"
+                className="ml-1 underline hover:text-blue-600"
+              >
+                /docs/llms.txt
+              </a>
+            </p>
+          </div>
         </div>
 
         {/* Quick Start Section */}

@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import session from "express-session";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import path from 'path';
 import { storage } from "./storage";
 import { authenticateSession, authenticateApiKey, authenticateEither, checkProjectAccess, type AuthenticatedRequest } from "./middleware/auth";
 import {
@@ -73,7 +74,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/signup", async (req, res) => {
     try {
       const data = signupSchema.parse(req.body);
-      
+
       // Check if user already exists
       const existingUser = await storage.getUserByEmail(data.email);
       if (existingUser) {
@@ -82,7 +83,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Hash password
       const hashedPassword = await bcrypt.hash(data.password, 12);
-      
+
       // Create user
       const user = await storage.createUser({
         ...data,
@@ -131,7 +132,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/auth/login", async (req, res) => {
     try {
       const data = loginSchema.parse(req.body);
-      
+
       const user = await storage.getUserByEmail(data.email);
       if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
@@ -211,7 +212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/projects", authenticateSession, async (req: AuthenticatedRequest, res) => {
     try {
       const data = insertProjectSchema.omit({ ownerId: true }).parse(req.body);
-      
+
       // Check if slug is unique
       const existingProject = await storage.getProjectBySlug(data.slug);
       if (existingProject) {
@@ -246,10 +247,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/projects/:projectId", authenticateSession, async (req: AuthenticatedRequest, res) => {
     try {
       await checkProjectAccess(req, res, () => {}, "viewer");
-      
+
       const projectId = parseInt(req.params.projectId);
       const project = await storage.getProject(projectId);
-      
+
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
@@ -264,7 +265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/projects/:projectId/prompts", authenticateSession, async (req: AuthenticatedRequest, res) => {
     try {
       await checkProjectAccess(req, res, () => {}, "viewer");
-      
+
       const projectId = parseInt(req.params.projectId);
       const prompts = await storage.getProjectPrompts(projectId);
       res.json(prompts);
@@ -276,7 +277,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/projects/:projectId/prompts", authenticateSession, async (req: AuthenticatedRequest, res) => {
     try {
       await checkProjectAccess(req, res, () => {}, "editor");
-      
+
       const projectId = parseInt(req.params.projectId);
       const data = insertPromptSchema.parse({
         ...req.body,
@@ -365,7 +366,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       let prompt = await storage.getPromptBySlug(project.id, slug);
-      
+
       if (!prompt) {
         // Create new prompt
         prompt = await storage.createPrompt({
@@ -543,7 +544,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/api-keys", authenticateSession, async (req: AuthenticatedRequest, res) => {
     try {
       const apiKeys = await storage.getUserApiKeys(req.user!.id);
-      
+
       // Mask the keys for security
       const maskedKeys = apiKeys.map(key => ({
         ...key,
@@ -560,7 +561,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/api-keys", authenticateSession, async (req: AuthenticatedRequest, res) => {
     try {
       const data = req.body;
-      
+
       // Generate API key
       const keyValue = `pk_${crypto.randomBytes(32).toString("hex")}`;
       const keyHash = crypto.createHash("sha256").update(keyValue).digest("hex");
@@ -589,7 +590,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const keyId = parseInt(req.params.keyId);
       const apiKey = await storage.getApiKey(keyId);
-      
+
       if (!apiKey || apiKey.userId !== req.user!.id) {
         return res.status(404).json({ message: "API key not found" });
       }
@@ -660,6 +661,170 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(newMember);
     } catch (error) {
       res.status(500).json({ message: "Failed to invite member" });
+    }
+  });
+
+  /**
+   * @swagger
+   * /docs/llms.txt:
+   *   get:
+   *     summary: Get LLM integration instructions
+   *     description: Returns plain text instructions for AI agents to integrate PromptVault
+   *     responses:
+   *       200:
+   *         description: LLM integration instructions
+   *         content:
+   *           text/plain:
+   *             schema:
+   *               type: string
+   */
+  app.get('/docs/llms.txt', (req, res) => {
+    res.setHeader('Content-Type', 'text/plain');
+    res.sendFile(path.join(__dirname, '../docs/llms.txt'));
+  });
+
+  /**
+   * @swagger
+   * /api/prompts/{slug}:
+   *   get:
+   *     summary: Get a prompt and its content (latest or specific version)
+   *     tags: [Prompts]
+   *     security:
+   *       - sessionAuth: []
+   *       - apiKeyAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: slug
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Prompt slug identifier
+   *       - in: query
+   *         name: projectSlug
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Project slug where prompt belongs
+   *       - in: query
+   *         name: version
+   *         required: false
+   *         schema:
+   *           type: integer
+   *         description: Specific version number (defaults to latest)
+   *     responses:
+   *       200:
+   *         description: Prompt content retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 slug:
+   *                   type: string
+   *                 title:
+   *                   type: string
+   *                 category:
+   *                   type: string
+   *                 version:
+   *                   type: integer
+   *                 content:
+   *                   type: string
+   *                 message:
+   *                   type: string
+   *                 author:
+   *                   $ref: '#/components/schemas/User'
+   *                 createdAt:
+   *                   type: string
+   *                   format: date-time
+   *       400:
+   *         description: Project slug required
+   *       401:
+   *         description: Authentication required
+   *       403:
+   *         description: Access denied to this project
+   *       404:
+   *         description: Project, prompt, or version not found
+   */
+  app.get("/api/prompts/:slug", authenticateEither, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { slug } = req.params;
+      const { version, projectSlug } = req.query;
+
+      if (!projectSlug) {
+        return res.status(400).json({ message: "Project slug required" });
+      }
+
+      const project = await storage.getProjectBySlug(projectSlug as string);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      // Check if user has access to project
+      const member = await storage.getProjectMember(project.id, req.user!.id);
+      if (!member) {
+        return res.status(403).json({ message: "Access denied to this project" });
+      }
+
+      const prompt = await storage.getPromptBySlug(project.id, slug);
+      if (!prompt) {
+        return res.status(404).json({ message: "Prompt not found" });
+      }
+
+      let promptVersion;
+      if (version) {
+        const versions = await storage.getPromptVersions(prompt.id);
+        promptVersion = versions.find(v => v.version === parseInt(version as string));
+      } else {
+        promptVersion = await storage.getLatestPromptVersion(prompt.id);
+      }
+
+      if (!promptVersion) {
+        return res.status(404).json({ message: "Prompt version not found" });
+      }
+
+      res.json({
+        slug: prompt.slug,
+        title: prompt.title,
+        category: prompt.category,
+        version: promptVersion.version,
+        content: promptVersion.content,
+        message: promptVersion.message,
+        author: promptVersion.author,
+        createdAt: promptVersion.createdAt,
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch prompt" });
+    }
+  });
+
+  app.get("/api/prompts/:slug/versions", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { slug } = req.params;
+      const { projectSlug } = req.query;
+
+      if (!projectSlug) {
+        return res.status(400).json({ message: "Project slug required" });
+      }
+
+      const project = await storage.getProjectBySlug(projectSlug as string);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const member = await storage.getProjectMember(project.id, req.user!.id);
+      if (!member) {
+        return res.status(403).json({ message: "Access denied to this project" });
+      }
+
+      const prompt = await storage.getPromptBySlug(project.id, slug);
+      if (!prompt) {
+        return res.status(404).json({ message: "Prompt not found" });
+      }
+
+      const versions = await storage.getPromptVersions(prompt.id);
+      res.json(versions);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch prompt versions" });
     }
   });
 

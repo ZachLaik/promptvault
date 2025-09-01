@@ -1,0 +1,160 @@
+2025-09-01 17:56:30.19
+9b23ea72
+User
+},
+2025-09-01 17:56:30.19
+9b23ea72
+User
+response: {
+2025-09-01 17:56:30.19
+9b23ea72
+User
+url: 'https://api.github.com/user/repos',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+status: 403,
+2025-09-01 17:56:30.19
+9b23ea72
+User
+headers: {
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'access-control-allow-origin': '*',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'access-control-expose-headers': 'ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'content-encoding': 'gzip',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'content-security-policy': "default-src 'none'",
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'content-type': 'application/json; charset=utf-8',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+date: 'Mon, 01 Sep 2025 15:56:30 GMT',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'github-authentication-token-expiration': '2025-09-01 23:56:10 UTC',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'referrer-policy': 'origin-when-cross-origin, strict-origin-when-cross-origin',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+server: 'github.com',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'strict-transport-security': 'max-age=31536000; includeSubdomains; preload',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'transfer-encoding': 'chunked',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+vary: 'Accept-Encoding, Accept, X-Requested-With',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-accepted-github-permissions': 'administration=write',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-accepted-oauth-scopes': 'repo',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-content-type-options': 'nosniff',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-frame-options': 'deny',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-github-api-version-selected': '2022-11-28',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-github-media-type': 'github.v3; format=json',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-github-request-id': '490F:185EE2:55D767:1368F24:68B5C22E',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-oauth-client-id': 'Iv23litardgPxDQsmQqy',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-oauth-scopes': '',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-ratelimit-limit': '5000',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-ratelimit-remaining': '4991',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-ratelimit-reset': '1756745258',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-ratelimit-resource': 'core',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-ratelimit-used': '9',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+'x-xss-protection': '0'
+2025-09-01 17:56:30.19
+9b23ea72
+User
+},
+2025-09-01 17:56:30.19
+9b23ea72
+User
+data: {
+2025-09-01 17:56:30.19
+9b23ea72
+User
+message: 'Resource not accessible by integration',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+documentation_url: 'https://docs.github.com/rest/repos/repos#create-a-repository-for-the-authenticated-user',
+2025-09-01 17:56:30.19
+9b23ea72
+User
+status: '403'
+2025-09-01 17:56:30.19
+9b23ea72
+User
+}
+2025-09-01 17:56:30.19
+9b23ea72
+User
+}
+2025-09-01 17:56:30.19
+9b23ea72
+User
+}

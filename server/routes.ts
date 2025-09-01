@@ -183,8 +183,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/auth/github/callback", 
     passport.authenticate("github", { failureRedirect: "/login" }),
     (req, res) => {
-      // Successful authentication, redirect to dashboard
-      res.redirect("/dashboard");
+      // Successful authentication, set session manually
+      if (req.user) {
+        (req.session as any).userId = (req.user as any).id;
+        req.session.save((err) => {
+          if (err) {
+            console.error('Session save error:', err);
+            return res.redirect("/login");
+          }
+          res.redirect("/dashboard");
+        });
+      } else {
+        res.redirect("/login");
+      }
     }
   );
 

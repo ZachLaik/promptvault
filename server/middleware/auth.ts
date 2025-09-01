@@ -34,6 +34,7 @@ passport.use(new GitHubStrategy({
         if (user) {
           // Link GitHub account to existing user
           await storage.updateUserGithubInfo(user.id, profile.id, accessToken);
+          user = await storage.getUser(user.id); // Refresh user data
         }
       }
       
@@ -50,10 +51,12 @@ passport.use(new GitHubStrategy({
     } else {
       // Update access token
       await storage.updateUserGithubInfo(user.id, profile.id, accessToken);
+      user = await storage.getUser(user.id); // Refresh user data
     }
     
     return done(null, user);
   } catch (error) {
+    console.error('GitHub OAuth error:', error);
     return done(error, null);
   }
 }));

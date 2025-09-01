@@ -92,9 +92,21 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
-  async createUser(user: InsertUser): Promise<User> {
-    const result = await this.db.insert(users).values(user).returning();
-    return result[0];
+  async createUser(userData: typeof users.$inferInsert) {
+    const [user] = await this.db.insert(users).values(userData).returning();
+    return user;
+  }
+
+  async getUserByGithubId(githubId: string) {
+    const [user] = await this.db.select().from(users).where(eq(users.githubId, githubId));
+    return user;
+  }
+
+  async updateUserGithubInfo(userId: number, githubId: string, accessToken: string) {
+    await this.db.update(users).set({
+      githubId,
+      githubAccessToken: accessToken
+    }).where(eq(users.id, userId));
   }
 
   // Projects
@@ -123,7 +135,7 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(projectMembers, eq(projectMembers.projectId, projects.id))
       .where(eq(projectMembers.userId, userId))
       .orderBy(desc(projects.createdAt));
-    
+
     return result;
   }
 
@@ -160,7 +172,7 @@ export class DatabaseStorage implements IStorage {
       .from(projectMembers)
       .innerJoin(users, eq(users.id, projectMembers.userId))
       .where(eq(projectMembers.projectId, projectId));
-    
+
     return result;
   }
 
@@ -242,7 +254,7 @@ export class DatabaseStorage implements IStorage {
       .innerJoin(users, eq(users.id, promptVersions.authorId))
       .where(eq(promptVersions.promptId, promptId))
       .orderBy(desc(promptVersions.version));
-    
+
     return result;
   }
 
@@ -263,7 +275,7 @@ export class DatabaseStorage implements IStorage {
       .where(eq(promptVersions.promptId, promptId))
       .orderBy(desc(promptVersions.version))
       .limit(1);
-    
+
     return result[0];
   }
 

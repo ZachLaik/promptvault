@@ -4,7 +4,9 @@ import session from "express-session";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import path from 'path';
+import passport from "passport";
 import { storage } from "./storage";
+import { GitHubSyncService } from "./github-sync";
 import { authenticateSession, authenticateApiKey, authenticateEither, checkProjectAccess, type AuthenticatedRequest } from "./middleware/auth";
 import {
   loginSchema,
@@ -43,6 +45,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       sameSite: 'lax', // Add sameSite for better compatibility
     },
   }));
+
+  // Initialize Passport
+  app.use(passport.initialize());
+  app.use(passport.session());
 
   // Auth routes
   /**
@@ -168,6 +174,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/auth/me", authenticateSession, (req: AuthenticatedRequest, res) => {
     res.json(req.user);
   });
+
+  // GitHub OAuth routes
+  app.get("/api/auth/github", passport.authenticate("github", {
+    scope: ["user:email", "repo"]
+  }));
+
+  app.get("/api/auth/github/callback", 
+    passport.authenticate("github", { failureRedirect: "/login" }),
+    (req, res) => {
+      // Successful authentication, redirect to dashboard
+      res.redirect("/dashboard");
+    }
+  );
 
   // Project routes
   /**
@@ -697,6 +716,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(newMember);
     } catch (error) {
       res.status(500).json({ message: "Failed to invite member" });
+    }
+  });
+
+  // GitHub sync routes
+  app.get("/api/github/repos", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const user = await storage.getUser(req.user!.id);
+      if (!user?.githubAccessToken) {
+        return res.status(400).json({ message: "GitHub account not connected" });
+      }
+
+      const githubService = new GitHubSyncService(user.githubAccessToken);
+      const repos = await githubService.getUserRepos();
+      res.json(repos);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch GitHub repositories" });
+    }
+  });
+
+  app.post("/api/github/repos", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const user = await storage.getUser(req.user!.id);
+      if (!user?.githubAccessToken) {
+        return res.status(400).json({ message: "GitHub account not connected" });
+      }
+
+      const { name, description, isPrivate = true } = req.body;
+      const githubService = new GitHubSyncService(user.githubAccessToken);
+      const result = await githubService.createRepository(name, description, isPrivate);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to create GitHub repository" });
+    }
+  });
+
+  app.post("/api/projects/:projectId/sync-github", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      if (isNaN(projectId)) {
+        return res.status(400).json({ message: "Invalid project ID" });
+      }
+
+      // Check if user has admin access to project
+      const member = await storage.getProjectMember(projectId, req.user!.id);
+      if (!member || member.role !== "admin") {
+        return res.status(403).json({ message: "Only project admins can sync to GitHub" });
+      }
+
+      const user = await storage.getUser(req.user!.id);
+      if (!user?.githubAccessToken) {
+        return res.status(400).json({ message: "GitHub account not connected" });
+      }
+
+      const { repoOwner, repoName } = req.body;
+      if (!repoOwner || !repoName) {
+        return res.status(400).json({ message: "Repository owner and name are required" });
+      }
+
+      const githubService = new GitHubSyncService(user.githubAccessToken);
+      const result = await githubService.syncProjectToGitHub(projectId, req.user!.id, repoOwner, repoName);
+      res.json(result);
+    } catch (error) {
+      res.status(500).json({ message: error.message || "Failed to sync project to GitHub" });
     }
   });
 

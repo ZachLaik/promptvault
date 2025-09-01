@@ -6,6 +6,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { GitHubSync } from "@/components/github-sync";
+import { useToast } from "@/hooks/use-toast";
 import { formatTimeAgo, getInitials } from "@/lib/auth";
 import type { Project, Prompt } from "@shared/schema";
 import {
@@ -68,7 +70,7 @@ export default function ProjectDetail() {
   return (
     <div className="min-h-screen bg-slate-50">
       <Sidebar />
-      
+
       <main className="ml-64 min-h-screen">
         {/* Project Header */}
         <header className="bg-white border-b border-gray-200 px-6 py-4">
@@ -96,7 +98,7 @@ export default function ProjectDetail() {
             </div>
           </div>
         </header>
-        
+
         {/* Project Content */}
         <div className="p-6">
           {/* Project Info */}
@@ -134,7 +136,7 @@ export default function ProjectDetail() {
               </div>
             </CardContent>
           </Card>
-          
+
           {/* Prompts Table */}
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">
@@ -163,7 +165,7 @@ export default function ProjectDetail() {
                 </div>
               </div>
             </div>
-            
+
             {prompts.length === 0 ? (
               <div className="p-6 text-center">
                 <p className="text-gray-500">No prompts yet. Create your first prompt to get started.</p>

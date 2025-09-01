@@ -85,7 +85,9 @@ export default function ProjectDetail() {
               </nav>
             </div>
             <div className="flex items-center space-x-3">
+              <GitHubSync projectId={project.id} projectName={project.name} />
               <Button variant="outline" className="text-gray-600 hover:text-gray-900">
+                  <Users className="h-4 w-4 mr-2" />
                 <Users className="h-4 w-4 mr-2" />
                 Manage Team
               </Button>

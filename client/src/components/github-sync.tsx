@@ -129,6 +129,24 @@ export function GitHubSync({ projectId, projectName }: GitHubSyncProps) {
         </DialogHeader>
         
         <div className="space-y-4">
+          <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
+            <div className="flex items-center gap-2 mb-2">
+              <Github className="h-5 w-5 text-blue-600" />
+              <h3 className="font-medium text-blue-800">Install GitHub App First</h3>
+            </div>
+            <p className="text-sm text-blue-700 mb-3">
+              To sync your prompts with GitHub, you need to install the Prompt SafeKeep app in your GitHub account.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open("https://github.com/apps/prompt-safekeep", "_blank")}
+              className="text-blue-700 border-blue-300 hover:bg-blue-100"
+            >
+              Install GitHub App
+            </Button>
+          </div>
+          
           <div className="flex gap-2">
             <Button
               variant={!isCreateMode ? "default" : "outline"}

@@ -162,7 +162,7 @@ export default function LandingPage() {
 
 # Configure once
 promptvault.configure(
-    base_url="your-app.replit.app",
+    base_url="prompting-manager.replit.app",
     api_key="pk_your_key"
 )
 
@@ -181,7 +181,7 @@ print(str(prompt))`}
 
 // Configure once
 const pv = new PromptVault({
-  baseUrl: 'your-app.replit.app',
+  baseUrl: 'prompting-manager.replit.app',
   apiKey: 'pk_your_key'
 });
 

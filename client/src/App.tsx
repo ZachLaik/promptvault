@@ -1,9 +1,11 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
+import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
+import LandingPage from "@/pages/landing";
 import LoginPage from "@/pages/login";
 import Dashboard from "@/pages/dashboard";
 import ProjectsPage from "@/pages/projects";
@@ -34,14 +36,35 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function Router() {
+  const { user } = useAuth();
+  const [location] = useLocation();
+
+  useEffect(() => {
+    const titles: Record<string, string> = {
+      '/': 'PromptVault - AI Prompt Management',
+      '/login': 'Login - PromptVault',
+      '/dashboard': 'Dashboard - PromptVault',
+      '/projects': 'Projects - PromptVault',
+      '/api-keys': 'API Keys - PromptVault',
+      '/team': 'Team - PromptVault',
+      '/docs': 'Documentation - PromptVault',
+    };
+
+    document.title = titles[location] || 'PromptVault';
+  }, [location]);
+
   return (
     <Switch>
-      <Route path="/login" component={LoginPage} />
       <Route path="/">
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
+        {user ? (
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        ) : (
+          <LandingPage />
+        )}
       </Route>
+      <Route path="/login" component={LoginPage} />
       <Route path="/dashboard">
         <ProtectedRoute>
           <Dashboard />
@@ -87,11 +110,7 @@ function Router() {
           <PromptEditor />
         </ProtectedRoute>
       </Route>
-      <Route path="/docs">
-        <ProtectedRoute>
-          <DocsPage />
-        </ProtectedRoute>
-      </Route>
+      <Route path="/docs" component={DocsPage} />
       <Route component={NotFound} />
     </Switch>
   );

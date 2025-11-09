@@ -33,18 +33,40 @@ import {
  */
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Session configuration
-  app.use(session({
+  // Health check endpoint for deployments
+  app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok' });
+  });
+
+  // Session configuration with PostgreSQL store for production
+  const sessionConfig: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "development-secret-change-in-production",
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // Set to false for Replit deployment
+      secure: process.env.NODE_ENV === 'production',
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: 'lax', // Add sameSite for better compatibility
+      sameSite: 'lax',
     },
-  }));
+  };
+
+  // Use PostgreSQL session store in production
+  if (process.env.NODE_ENV === 'production' && process.env.DATABASE_URL) {
+    const ConnectPgSimple = require('connect-pg-simple')(session);
+    const { neon } = require('@neondatabase/serverless');
+    const sql = neon(process.env.DATABASE_URL);
+    
+    sessionConfig.store = new ConnectPgSimple({
+      conObject: {
+        connectionString: process.env.DATABASE_URL,
+        ssl: true,
+      },
+      createTableIfMissing: true,
+    });
+  }
+
+  app.use(session(sessionConfig));
 
   // Initialize Passport
   app.use(passport.initialize());

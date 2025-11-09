@@ -218,8 +218,17 @@ class PromptVaultTester {
   // Test 7: List Prompts in Project
   async testListPrompts() {
     try {
+      if (!this.testProjectId) {
+        this.log({
+          name: 'List Prompts in Project',
+          status: 'FAIL',
+          message: 'No project ID available'
+        });
+        return;
+      }
+
       const response = await this.client.get(
-        `/api/projects/${this.testProjectSlug}/prompts`
+        `/api/projects/${this.testProjectId}/prompts`
       );
 
       if (response.status === 200 && Array.isArray(response.data)) {

@@ -231,7 +231,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
    *             schema:
    *               $ref: '#/components/schemas/Error'
    */
-  app.get("/api/projects", authenticateSession, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/projects", authenticateEither, async (req: AuthenticatedRequest, res) => {
     try {
       const projects = await storage.getProjectsForUser(req.user!.id);
       res.json(projects);
@@ -328,7 +328,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Prompt routes
-  app.get("/api/projects/:projectId/prompts", authenticateSession, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/projects/:projectId/prompts", authenticateEither, async (req: AuthenticatedRequest, res) => {
     try {
       await checkProjectAccess(req, res, () => {}, "viewer");
 
@@ -597,7 +597,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // API key routes
-  app.get("/api/api-keys", authenticateSession, async (req: AuthenticatedRequest, res) => {
+  app.get("/api/api-keys", authenticateEither, async (req: AuthenticatedRequest, res) => {
     try {
       const apiKeys = await storage.getUserApiKeys(req.user!.id);
 

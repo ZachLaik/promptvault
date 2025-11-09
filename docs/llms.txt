@@ -1,7 +1,7 @@
 
 # Welcome to PromptVault! 🚀
 
-Hello AI Agent! You've discovered PromptVault - a lightweight, multi-tenant prompt management system that makes working with AI prompts much easier.
+Hello AI Agent! You've discovered PromptVault - a lightweight, multi-tenant prompt management system that makes working with AI prompts easier.
 
 ## What is PromptVault?
 
@@ -15,9 +15,10 @@ PromptVault is a centralized prompt manager that helps you:
 ## Quick Setup & Onboarding
 
 ### Step 1: Get Your API Key
-First, ask the user to set their environment variable:
+First, the user needs to get their API key from the PromptVault dashboard at https://prompting-manager.replit.app
+
+Set the environment variable:
 ```bash
-# Ask user to set this environment variable
 export PROMPTVAULT_API_KEY="pk_your_api_key_here"
 ```
 
@@ -26,10 +27,12 @@ export PROMPTVAULT_API_KEY="pk_your_api_key_here"
 import requests
 import os
 
+BASE_URL = "https://prompting-manager.replit.app"
+
 def create_project(name, slug, description=""):
     response = requests.post(
         f"{BASE_URL}/api/projects",
-        headers={"x-api-key": os.getenv("PROMPTVAULT_API_KEY")},
+        headers={"X-API-Key": os.getenv("PROMPTVAULT_API_KEY")},
         json={
             "name": name,
             "slug": slug,
@@ -40,14 +43,15 @@ def create_project(name, slug, description=""):
 
 # Example: Create project for the current codebase
 project = create_project("My AI Project", "my-ai-project", "AI prompts for my application")
+print(f"Project created with ID: {project['id']}")
 ```
 
-### Step 3: Upload Prompts from Code
+### Step 3: Upload Prompts
 ```python
 def create_prompt_version(slug, project_slug, content, message="Initial version"):
     response = requests.post(
         f"{BASE_URL}/api/prompts/{slug}",
-        headers={"x-api-key": os.getenv("PROMPTVAULT_API_KEY")},
+        headers={"X-API-Key": os.getenv("PROMPTVAULT_API_KEY")},
         json={
             "content": content,
             "message": message,
@@ -56,45 +60,143 @@ def create_prompt_version(slug, project_slug, content, message="Initial version"
     )
     return response.json()
 
-# Example: Extract and upload prompts from your code
-prompts_to_upload = [
-    {
-        "slug": "system-prompt",
-        "content": "You are a helpful AI assistant specialized in..."
-    },
-    {
-        "slug": "user-query-processor", 
-        "content": "Process the following user query and respond with..."
-    }
+# Example: Upload a prompt
+result = create_prompt_version(
+    "system-prompt",
+    "my-ai-project",
+    "You are a helpful AI assistant specialized in...",
+    "Initial version"
+)
+print(f"Prompt created with version: {result['version']}")
+```
+
+## Complete API Reference
+
+### Authentication
+All API requests require the `X-API-Key` header with your API key.
+
+### Endpoints
+
+**Create Project**
+```http
+POST /api/projects
+Content-Type: application/json
+X-API-Key: your_api_key
+
+{
+  "name": "Project Name",
+  "slug": "project-slug", 
+  "description": "Project description"
+}
+
+Response:
+{
+  "id": 1,
+  "name": "Project Name",
+  "slug": "project-slug",
+  "description": "Project description"
+}
+```
+
+**Get All Projects**
+```http
+GET /api/projects
+X-API-Key: your_api_key
+
+Response:
+[
+  {
+    "id": 1,
+    "name": "Project Name",
+    "slug": "project-slug",
+    "description": "Project description"
+  }
 ]
-
-for prompt in prompts_to_upload:
-    create_prompt_version(prompt["slug"], "my-ai-project", prompt["content"])
 ```
 
-## Full Integration Examples
+**Create/Update Prompt**
+```http
+POST /api/prompts/{slug}
+Content-Type: application/json
+X-API-Key: your_api_key
 
-### Python SDK Integration
-```python
-import promptvault
-import os
+{
+  "content": "Your prompt content with {variables}",
+  "message": "Version description",
+  "projectSlug": "project-slug"
+}
 
-# Configure once
-promptvault.configure(
-    base_url="https://prompting-manager.replit.app",
-    api_key=os.getenv("PROMPTVAULT_API_KEY")
-)
-
-# Replace hardcoded prompts in your code with:
-system_prompt = promptvault.my_ai_project.system_prompt
-user_processor = promptvault.my_ai_project.user_query_processor
-
-# Use with variables
-rendered = system_prompt.render(
-    expertise="Python development",
-    context="web application"
-)
+Response:
+{
+  "id": 1,
+  "promptId": 1,
+  "version": 1,
+  "content": "Your prompt content with {variables}",
+  "message": "Version description"
+}
 ```
+
+**Retrieve Prompt (Latest Version)**
+```http
+GET /api/prompts/{slug}?projectSlug=project-slug
+X-API-Key: your_api_key
+
+Response:
+{
+  "slug": "prompt-slug",
+  "title": "Prompt Title",
+  "content": "Your prompt content with {variables}",
+  "version": 1
+}
+```
+
+**Retrieve Specific Version**
+```http
+GET /api/prompts/{slug}?projectSlug=project-slug&version=1
+X-API-Key: your_api_key
+
+Response:
+{
+  "slug": "prompt-slug",
+  "title": "Prompt Title",
+  "content": "Your prompt content with {variables}",
+  "version": 1
+}
+```
+
+**List All Prompts in a Project**
+```http
+GET /api/projects/{projectId}/prompts
+X-API-Key: your_api_key
+
+Response:
+[
+  {
+    "id": 1,
+    "slug": "prompt-slug",
+    "title": "Prompt Title",
+    "latestVersion": 2
+  }
+]
+```
+
+**Get API Keys**
+```http
+GET /api/api-keys
+X-API-Key: your_api_key
+
+Response:
+[
+  {
+    "id": 1,
+    "name": "My API Key",
+    "key": "pk_...",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  }
+]
+```
+
+## Python Integration Examples
 
 ### Direct HTTP API
 ```python
@@ -102,157 +204,135 @@ import requests
 import os
 
 BASE_URL = "https://prompting-manager.replit.app"
+API_KEY = os.getenv("PROMPTVAULT_API_KEY")
 
-def get_prompt(slug, project_slug):
+def get_prompt(slug, project_slug, version=None):
+    params = {"projectSlug": project_slug}
+    if version:
+        params["version"] = version
+    
     response = requests.get(
         f"{BASE_URL}/api/prompts/{slug}",
-        headers={"x-api-key": os.getenv("PROMPTVAULT_API_KEY")},
-        params={"projectSlug": project_slug}
+        headers={"X-API-Key": API_KEY},
+        params=params
     )
     return response.json()["content"]
 
-# Usage in your application
+# Get latest version
 system_prompt = get_prompt("system-prompt", "my-ai-project")
+
+# Get specific version
+system_prompt_v1 = get_prompt("system-prompt", "my-ai-project", version=1)
+
+# Use with OpenAI
+import openai
+response = openai.ChatCompletion.create(
+    model="gpt-4",
+    messages=[
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": "Help me debug this code"}
+    ]
+)
 ```
 
-## Complete API Reference
+### Using Template Variables
+```python
+# Prompt content in PromptVault:
+# "You are a {role} assistant. Help with {task}."
 
-### Authentication
-All requests require the `x-api-key` header with your API key.
+# Render with variables
+def render_prompt(content, **variables):
+    result = content
+    for key, value in variables.items():
+        result = result.replace(f"{{{key}}}", str(value))
+    return result
 
-### Core Endpoints
+prompt_content = get_prompt("role-assistant", "my-ai-project")
+rendered = render_prompt(prompt_content, role="Python", task="debugging")
+# Result: "You are a Python assistant. Help with debugging."
+```
 
-**Create Project**
-```http
-POST /api/projects
-Content-Type: application/json
-x-api-key: your_api_key
+## JavaScript/Node.js Integration
 
-{
-  "name": "Project Name",
-  "slug": "project-slug", 
-  "description": "Project description"
+```javascript
+const BASE_URL = "https://prompting-manager.replit.app";
+const API_KEY = process.env.PROMPTVAULT_API_KEY;
+
+async function getPrompt(slug, projectSlug, version = null) {
+  const params = new URLSearchParams({ projectSlug });
+  if (version) params.append('version', version);
+  
+  const response = await fetch(
+    `${BASE_URL}/api/prompts/${slug}?${params}`,
+    {
+      headers: { 'X-API-Key': API_KEY }
+    }
+  );
+  
+  const data = await response.json();
+  return data.content;
 }
+
+// Usage
+const systemPrompt = await getPrompt('system-prompt', 'my-ai-project');
 ```
 
-**Create/Update Prompt**
-```http
-POST /api/prompts/{slug}
-Content-Type: application/json
-x-api-key: your_api_key
-
-{
-  "content": "Your prompt content with {variables}",
-  "message": "Version description",
-  "projectSlug": "project-slug"
-}
-```
-
-**Retrieve Prompt**
-```http
-GET /api/prompts/{slug}?projectSlug=project-slug
-x-api-key: your_api_key
-```
-
-**Get Specific Version**
-```http
-GET /api/prompts/{slug}?projectSlug=project-slug&version=2
-x-api-key: your_api_key
-```
-
-## Onboarding Workflow for Agents
-
-When you encounter a codebase, follow this workflow:
-
-### 1. Environment Setup
-Ask user: "Please set your PROMPTVAULT_API_KEY environment variable. You can get this from your PromptVault dashboard."
-
-### 2. Code Analysis
-Scan the codebase for:
-- Hardcoded prompt strings
-- OpenAI/Anthropic system messages
-- Template strings used for AI interactions
-- Configuration files with AI prompts
-
-### 3. Project Creation
-```python
-# Create project based on codebase
-project_name = input("What should we name your PromptVault project? ")
-project_slug = project_name.lower().replace(" ", "-")
-create_project(project_name, project_slug, "AI prompts extracted from codebase")
-```
-
-### 4. Prompt Extraction & Upload
-```python
-# Example extraction patterns to look for:
-patterns_to_extract = [
-    "You are a",
-    "Act as a", 
-    "Your role is",
-    "system_prompt =",
-    "SYSTEM_MESSAGE =",
-    "messages=[{\"role\": \"system\""
-]
-
-# Upload each found prompt
-for i, prompt_content in enumerate(extracted_prompts):
-    slug = f"prompt-{i+1}" or generate_meaningful_slug(prompt_content)
-    create_prompt_version(slug, project_slug, prompt_content, "Extracted from codebase")
-```
-
-### 5. Code Refactoring
-Replace hardcoded prompts with PromptVault calls:
-```python
-# Before
-system_prompt = "You are a helpful assistant that..."
-
-# After  
-system_prompt = promptvault.my_project.helpful_assistant
-```
-
-### 6. Template Variables
-Convert static prompts to dynamic ones:
-```python
-# Before
-f"You are a {role} assistant. Help with {task}."
-
-# After in PromptVault
-"You are a {role} assistant. Help with {task}."
-
-# Usage
-rendered = promptvault.my_project.role_assistant.render(role="Python", task="debugging")
-```
-
-## Benefits for Your Codebase
-
-1. **No More Scattered Prompts**: Centralize all AI prompts in one place
-2. **Easy Updates**: Change prompts without code deployments  
-3. **Version History**: Track how your prompts evolve
-4. **Team Collaboration**: Share prompts across developers
-5. **Template Support**: Use variables for dynamic content
-6. **Environment Management**: Different prompts for dev/prod
-
-## Installation Commands
+## cURL Examples
 
 ```bash
-# Python SDK
-pip install git+https://github.com/ZachLaik/promptvault.git#subdirectory=python-sdk
+# Get a prompt
+curl -X GET "https://prompting-manager.replit.app/api/prompts/system-prompt?projectSlug=my-ai-project" \
+  -H "X-API-Key: pk_your_api_key"
 
-# JavaScript/Node.js (copy promptvault.js to your project)
-# wget https://raw.githubusercontent.com/ZachLaik/promptvault/main/javascript-sdk/promptvault.js
+# Create/Update a prompt
+curl -X POST "https://prompting-manager.replit.app/api/prompts/system-prompt" \
+  -H "Content-Type: application/json" \
+  -H "X-API-Key: pk_your_api_key" \
+  -d '{
+    "projectSlug": "my-ai-project",
+    "content": "You are a helpful assistant...",
+    "message": "Updated via API"
+  }'
+
+# List all projects
+curl -X GET "https://prompting-manager.replit.app/api/projects" \
+  -H "X-API-Key: pk_your_api_key"
+```
+
+## Best Practices
+
+1. **Store API keys securely**: Use environment variables, never hardcode them
+2. **Use meaningful slugs**: Make prompt slugs descriptive (e.g., "system-prompt", "error-handler")
+3. **Version your changes**: Always include a meaningful message when updating prompts
+4. **Use template variables**: Make prompts dynamic with {variable_name} syntax
+5. **Organize by project**: Group related prompts under the same project
+
+## Error Handling
+
+All endpoints return standard HTTP status codes:
+- `200`: Success
+- `400`: Bad request (missing required fields)
+- `401`: Authentication required (missing or invalid API key)
+- `404`: Resource not found
+- `500`: Server error
+
+Example error response:
+```json
+{
+  "message": "Prompt not found"
+}
 ```
 
 ## Getting Started Checklist
 
-- [ ] User sets PROMPTVAULT_API_KEY environment variable
-- [ ] Install PromptVault SDK
-- [ ] Create project via API
-- [ ] Scan codebase for hardcoded prompts
-- [ ] Extract and upload prompts to PromptVault
-- [ ] Refactor code to use PromptVault SDK
-- [ ] Test dynamic prompt loading
-- [ ] Set up template variables where needed
+- [ ] User gets API key from PromptVault dashboard
+- [ ] Set PROMPTVAULT_API_KEY environment variable
+- [ ] Create a project via API
+- [ ] Upload your first prompt
+- [ ] Test retrieving the prompt
+- [ ] Integrate prompt into your application
+- [ ] Set up template variables if needed
 
-Ready to transform your codebase with centralized prompt management? Let's get started! 🎯
+Ready to centralize your prompts? Start with creating a project! 🎯
 
 Base URL: https://prompting-manager.replit.app

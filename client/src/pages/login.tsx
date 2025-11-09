@@ -9,11 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Code, Github } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function LoginPage() {
   const [isSignup, setIsSignup] = useState(false);
   const { login, signup } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
 
   const loginForm = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
@@ -39,6 +41,7 @@ export default function LoginPage() {
         title: "Success",
         description: "Logged in successfully",
       });
+      setLocation("/dashboard");
     } catch (error) {
       toast({
         title: "Error",
@@ -55,6 +58,7 @@ export default function LoginPage() {
         title: "Success",
         description: "Account created successfully",
       });
+      setLocation("/dashboard");
     } catch (error) {
       toast({
         title: "Error",

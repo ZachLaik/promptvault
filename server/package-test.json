@@ -1,0 +1,6 @@
+
+{
+  "scripts": {
+    "test:api": "tsx server/test-api.ts"
+  }
+}

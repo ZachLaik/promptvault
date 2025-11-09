@@ -401,17 +401,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
    *       404:
    *         description: Project or prompt not found
    */
-  app.post("/api/prompts/:slug", async (req: AuthenticatedRequest, res) => {
-    // Try session auth first, then API key auth
-    try {
-      await authenticateSession(req, res, () => {});
-    } catch {
-      try {
-        await authenticateApiKey(req, res, () => {});
-      } catch {
-        return res.status(401).json({ message: "Authentication required" });
-      }
-    }
+  app.post("/api/prompts/:slug", authenticateEither, async (req: AuthenticatedRequest, res) => {
     try {
       const { slug } = req.params;
       const { content, message, projectSlug } = req.body;

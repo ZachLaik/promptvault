@@ -97,7 +97,7 @@ passport.deserializeUser(async (id: number, done) => {
 
 export async function authenticateSession(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const userId = req.session?.userId;
+    const userId = (req.session as any)?.userId;
     if (!userId) {
       return res.status(401).json({ message: "Not authenticated" });
     }
@@ -115,7 +115,7 @@ export async function authenticateSession(req: AuthenticatedRequest, res: Respon
 
     next();
   } catch (error) {
-    res.status(500).json({ message: "Authentication error" });
+    return res.status(500).json({ message: "Authentication error" });
   }
 }
 
@@ -150,7 +150,7 @@ export async function authenticateApiKey(req: AuthenticatedRequest, res: Respons
 
     next();
   } catch (error) {
-    res.status(500).json({ message: "Authentication error" });
+    return res.status(500).json({ message: "Authentication error" });
   }
 }
 

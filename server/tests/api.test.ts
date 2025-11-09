@@ -1,8 +1,7 @@
-
 import { describe, it, expect, beforeAll, afterAll } from '@jest/globals';
 
 const BASE_URL = 'http://0.0.0.0:5000';
-let API_KEY = ''; // Will be set by user
+let API_KEY = 'pk_8d30a1a3dab08a57dfa98f11601ec7665bc3628b57b56c4e8f517cd98968010b'; // Will be set by user
 
 interface Project {
   id: number;
@@ -33,11 +32,11 @@ describe('PromptVault API Tests', () => {
 
   beforeAll(() => {
     // User should set API_KEY before running tests
-    API_KEY = process.env.PROMPTVAULT_API_KEY || '';
+    // API_KEY = process.env.PROMPTVAULT_API_KEY || '';
     if (!API_KEY) {
       throw new Error('PROMPTVAULT_API_KEY environment variable must be set');
     }
-    
+
     // Generate unique identifiers for this test run
     const timestamp = Date.now();
     testProjectSlug = `test-project-${timestamp}`;

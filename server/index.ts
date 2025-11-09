@@ -3,8 +3,17 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setupSwagger } from "./swagger";
 import session from "express-session"; // Ensure express-session is installed: npm install express-session
+import cors from "cors";
 
 const app = express();
+
+// Add CORS middleware for API key authentication
+app.use(cors({
+  origin: '*', // Allow all origins for API key auth
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'x-api-key', 'Authorization'],
+}));
 
 // Add session middleware before other middleware
 app.use(

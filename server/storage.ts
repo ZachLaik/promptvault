@@ -28,6 +28,7 @@ export interface IStorage {
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUserPassword(userId: number, hashedPassword: string): Promise<void>;
 
   // Projects
   getProject(id: number): Promise<Project | undefined>;
@@ -106,6 +107,12 @@ export class DatabaseStorage implements IStorage {
     await this.db.update(users).set({
       githubId,
       githubAccessToken: accessToken
+    }).where(eq(users.id, userId));
+  }
+
+  async updateUserPassword(userId: number, hashedPassword: string): Promise<void> {
+    await this.db.update(users).set({
+      password: hashedPassword
     }).where(eq(users.id, userId));
   }
 

@@ -16,6 +16,7 @@ import DocsPage from "./pages/docs";
 import ApiKeysPage from "@/pages/api-keys";
 import TeamPage from "@/pages/team";
 import NotFound from "@/pages/not-found";
+import AccountSettings from "@/pages/account-settings";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -48,6 +49,7 @@ function Router() {
       '/api-keys': 'API Keys - PromptVault',
       '/team': 'Team - PromptVault',
       '/docs': 'Documentation - PromptVault',
+      '/account-settings': 'Account Settings - PromptVault',
     };
 
     document.title = titles[location] || 'PromptVault';
@@ -98,6 +100,11 @@ function Router() {
       <Route path="/team">
         <ProtectedRoute>
           <TeamPage />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/account-settings">
+        <ProtectedRoute>
+          <AccountSettings />
         </ProtectedRoute>
       </Route>
       <Route path="/projects/:projectId/prompts/new">

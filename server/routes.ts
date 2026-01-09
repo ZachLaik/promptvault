@@ -11,6 +11,7 @@ import { authenticateSession, authenticateApiKey, authenticateEither, checkProje
 import {
   loginSchema,
   signupSchema,
+  changePasswordSchema,
   insertProjectSchema,
   insertPromptSchema,
   insertPromptVersionSchema,
@@ -173,6 +174,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/auth/me", authenticateSession, (req: AuthenticatedRequest, res) => {
     res.json(req.user);
+  });
+
+  app.put("/api/auth/password", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const data = changePasswordSchema.parse(req.body);
+      
+      const user = await storage.getUser(req.user!.id);
+      if (!user || !user.password) {
+        return res.status(400).json({ message: "Cannot change password for this account" });
+      }
+      
+      const isValidPassword = await bcrypt.compare(data.currentPassword, user.password);
+      if (!isValidPassword) {
+        return res.status(401).json({ message: "Current password is incorrect" });
+      }
+      
+      const hashedPassword = await bcrypt.hash(data.newPassword, 12);
+      await storage.updateUserPassword(req.user!.id, hashedPassword);
+      
+      res.json({ message: "Password changed successfully" });
+    } catch (error) {
+      if (error instanceof Error && 'issues' in error) {
+        return res.status(400).json({ message: "Invalid input", details: error });
+      }
+      res.status(500).json({ message: "Failed to change password" });
+    }
   });
 
   // GitHub OAuth routes

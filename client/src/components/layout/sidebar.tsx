@@ -9,8 +9,16 @@ import {
   Users,
   Settings,
   Code,
-  Book
+  Book,
+  LogOut
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Sidebar() {
   const { user, logout } = useAuth();
@@ -65,25 +73,35 @@ export function Sidebar() {
 
         {/* User Menu */}
         <div className="border-t border-gray-200 p-4">
-          <div className="flex items-center">
-            <div className="h-8 w-8 bg-gray-300 rounded-full flex items-center justify-center mr-3">
-              <span className="text-gray-600 text-sm font-medium">
-                {user ? getInitials(user.username) : "U"}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900">{user?.username}</p>
-              <p className="text-xs text-gray-500">{user?.email}</p>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={logout}
-              className="p-1 text-gray-400 hover:text-gray-600"
-            >
-              <Settings className="h-4 w-4" />
-            </Button>
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2">
+                <div className="h-8 w-8 bg-gray-300 rounded-full flex items-center justify-center mr-3">
+                  <span className="text-gray-600 text-sm font-medium">
+                    {user ? getInitials(user.username) : "U"}
+                  </span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900">{user?.username}</p>
+                  <p className="text-xs text-gray-500">{user?.email}</p>
+                </div>
+                <Settings className="h-4 w-4 text-gray-400" />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <Link href="/account-settings">
+                <DropdownMenuItem className="cursor-pointer">
+                  <Settings className="mr-2 h-4 w-4" />
+                  Account Settings
+                </DropdownMenuItem>
+              </Link>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600">
+                <LogOut className="mr-2 h-4 w-4" />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
     </aside>

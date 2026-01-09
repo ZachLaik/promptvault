@@ -40,20 +40,23 @@ This is a full-stack prompt management application built with React, Express.js,
 ### Authentication System
 - Session-based authentication using express-session
 - Password hashing with bcrypt (12 rounds)
+- Password change functionality with current password verification
 - Dual authentication middleware for both sessions and API keys
 - Role-based project access control
 
 ### API Structure
-- `/api/auth/*` - Authentication endpoints (signup, login, logout)
+- `/api/auth/*` - Authentication endpoints (signup, login, logout, password change)
 - `/api/projects/*` - Project management and membership
 - `/api/prompts/*` - Prompt creation and versioning
 - `/api/api-keys/*` - API key management
 
 ### UI Components
-- Responsive sidebar navigation with project switching
+- Responsive sidebar navigation with project switching and user dropdown menu
 - Modal dialogs for creating projects and prompts
 - Form validation with real-time feedback
 - Toast notifications for user feedback
+- Account settings page for managing user profile and password
+- Version comparison dialog with track-changes style diff view
 - Dark/light theme support (configured but not implemented)
 
 ## Data Flow
@@ -127,6 +130,8 @@ This is a full-stack prompt management application built with React, Express.js,
 - July 04, 2025. Added Swagger UI at /docs endpoint for API testing
 - July 04, 2025. Fixed prompt versioning and content display issues  
 - July 04, 2025. Created Python SDK with elegant dot notation: `promptvault.project_name.prompt_name`
+- January 09, 2026. Added Account Settings page with password change functionality
+- January 09, 2026. Added version comparison feature in prompt editor with track-changes diff view
 
 ## User Preferences
 

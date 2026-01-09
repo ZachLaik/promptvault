@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, Link } from "wouter";
 import { useForm } from "react-hook-form";
@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { formatTimeAgo, getInitials } from "@/lib/auth";
@@ -19,6 +21,8 @@ import {
   History,
   Play,
   Save,
+  GitCompare,
+  X,
 } from "lucide-react";
 
 interface PromptVersionWithAuthor extends PromptVersion {
@@ -29,6 +33,51 @@ interface PromptVersionWithAuthor extends PromptVersion {
   };
 }
 
+function computeDiff(oldText: string, newText: string): { type: 'same' | 'add' | 'remove'; text: string }[] {
+  const oldLines = oldText.split('\n');
+  const newLines = newText.split('\n');
+  const result: { type: 'same' | 'add' | 'remove'; text: string }[] = [];
+  
+  let oldIndex = 0;
+  let newIndex = 0;
+  
+  while (oldIndex < oldLines.length || newIndex < newLines.length) {
+    if (oldIndex >= oldLines.length) {
+      result.push({ type: 'add', text: newLines[newIndex] });
+      newIndex++;
+    } else if (newIndex >= newLines.length) {
+      result.push({ type: 'remove', text: oldLines[oldIndex] });
+      oldIndex++;
+    } else if (oldLines[oldIndex] === newLines[newIndex]) {
+      result.push({ type: 'same', text: oldLines[oldIndex] });
+      oldIndex++;
+      newIndex++;
+    } else {
+      const oldLineInNew = newLines.indexOf(oldLines[oldIndex], newIndex);
+      const newLineInOld = oldLines.indexOf(newLines[newIndex], oldIndex);
+      
+      if (oldLineInNew === -1 && newLineInOld === -1) {
+        result.push({ type: 'remove', text: oldLines[oldIndex] });
+        result.push({ type: 'add', text: newLines[newIndex] });
+        oldIndex++;
+        newIndex++;
+      } else if (oldLineInNew !== -1 && (newLineInOld === -1 || oldLineInNew - newIndex <= newLineInOld - oldIndex)) {
+        while (newIndex < oldLineInNew) {
+          result.push({ type: 'add', text: newLines[newIndex] });
+          newIndex++;
+        }
+      } else {
+        while (oldIndex < newLineInOld) {
+          result.push({ type: 'remove', text: oldLines[oldIndex] });
+          oldIndex++;
+        }
+      }
+    }
+  }
+  
+  return result;
+}
+
 export default function PromptEditor() {
   const { projectId, promptSlug } = useParams();
   const { toast } = useToast();
@@ -37,6 +86,8 @@ export default function PromptEditor() {
   const [currentContent, setCurrentContent] = useState("");
   const [message, setMessage] = useState("");
   const [activeApiTab, setActiveApiTab] = useState("curl");
+  const [selectedVersions, setSelectedVersions] = useState<number[]>([]);
+  const [showCompareDialog, setShowCompareDialog] = useState(false);
 
   const { data: project } = useQuery<Project>({
     queryKey: [`/api/projects/${projectId}`],
@@ -111,6 +162,37 @@ export default function PromptEditor() {
     setCurrentContent(version.content);
     setMessage(`Loaded version ${version.version}`);
   };
+
+  const toggleVersionSelection = (versionNumber: number) => {
+    setSelectedVersions(prev => {
+      if (prev.includes(versionNumber)) {
+        return prev.filter(v => v !== versionNumber);
+      }
+      if (prev.length >= 2) {
+        return [prev[1], versionNumber].sort((a, b) => a - b);
+      }
+      return [...prev, versionNumber].sort((a, b) => a - b);
+    });
+  };
+
+  const handleCompare = () => {
+    if (selectedVersions.length === 2) {
+      setShowCompareDialog(true);
+    }
+  };
+
+  const compareVersions = useMemo(() => {
+    if (selectedVersions.length !== 2) return null;
+    const [v1Num, v2Num] = selectedVersions.sort((a, b) => a - b);
+    const v1 = versions.find(v => v.version === v1Num);
+    const v2 = versions.find(v => v.version === v2Num);
+    if (!v1 || !v2) return null;
+    return {
+      older: v1,
+      newer: v2,
+      diff: computeDiff(v1.content, v2.content),
+    };
+  }, [selectedVersions, versions]);
 
   if (!project) {
     return (
@@ -244,9 +326,30 @@ export default function PromptEditor() {
           {/* Sidebar with History */}
           <div className="w-80 p-6 pl-0">
             <Card className="h-full">
-              <div className="px-4 py-3 border-b border-gray-200">
+              <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
                 <h3 className="text-sm font-medium text-gray-900">Version History</h3>
+                {selectedVersions.length === 2 && (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={handleCompare}
+                    className="h-7 text-xs"
+                  >
+                    <GitCompare className="h-3 w-3 mr-1" />
+                    Compare
+                  </Button>
+                )}
               </div>
+              
+              {versions.length > 1 && (
+                <div className="px-4 py-2 bg-gray-50 border-b border-gray-200">
+                  <p className="text-xs text-gray-500">
+                    {selectedVersions.length === 0 && "Select 2 versions to compare"}
+                    {selectedVersions.length === 1 && "Select 1 more version to compare"}
+                    {selectedVersions.length === 2 && `Comparing v${Math.min(...selectedVersions)} and v${Math.max(...selectedVersions)}`}
+                  </p>
+                </div>
+              )}
               
               <div className="p-4 space-y-3 max-h-96 overflow-y-auto">
                 {versions.length === 0 ? (
@@ -255,11 +358,24 @@ export default function PromptEditor() {
                   versions.map((version) => (
                     <div
                       key={version.id}
-                      className="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 cursor-pointer"
+                      className={`border rounded-lg p-3 hover:bg-gray-50 cursor-pointer transition-colors ${
+                        selectedVersions.includes(version.version) 
+                          ? 'border-blue-400 bg-blue-50' 
+                          : 'border-gray-200'
+                      }`}
                       onClick={() => loadVersion(version)}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-900">v{version.version}</span>
+                        <div className="flex items-center gap-2">
+                          {versions.length > 1 && (
+                            <Checkbox
+                              checked={selectedVersions.includes(version.version)}
+                              onCheckedChange={() => toggleVersionSelection(version.version)}
+                              onClick={(e) => e.stopPropagation()}
+                            />
+                          )}
+                          <span className="text-sm font-medium text-gray-900">v{version.version}</span>
+                        </div>
                         <span className="text-xs text-gray-500">{formatTimeAgo(version.createdAt)}</span>
                       </div>
                       <div className="flex items-center mb-2">
@@ -458,6 +574,100 @@ console.log(data.content);`}
           </div>
         </div>
       </main>
+
+      {/* Compare Dialog */}
+      <Dialog open={showCompareDialog} onOpenChange={setShowCompareDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <GitCompare className="h-5 w-5" />
+              Compare Versions
+              {compareVersions && (
+                <span className="text-sm font-normal text-gray-500">
+                  v{compareVersions.older.version} → v{compareVersions.newer.version}
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+          
+          {compareVersions && (
+            <div className="flex-1 overflow-auto">
+              <div className="flex gap-4 mb-4">
+                <div className="flex-1 p-3 bg-red-50 rounded-lg border border-red-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="outline" className="bg-red-100 text-red-700 border-red-300">
+                      v{compareVersions.older.version}
+                    </Badge>
+                    <span className="text-sm text-gray-600">
+                      {compareVersions.older.author.username} • {formatTimeAgo(compareVersions.older.createdAt)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500">{compareVersions.older.message}</p>
+                </div>
+                <div className="flex-1 p-3 bg-green-50 rounded-lg border border-green-200">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300">
+                      v{compareVersions.newer.version}
+                    </Badge>
+                    <span className="text-sm text-gray-600">
+                      {compareVersions.newer.author.username} • {formatTimeAgo(compareVersions.newer.createdAt)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500">{compareVersions.newer.message}</p>
+                </div>
+              </div>
+
+              <div className="bg-gray-900 rounded-lg p-4 font-mono text-sm overflow-auto max-h-96">
+                {compareVersions.diff.map((line, index) => (
+                  <div
+                    key={index}
+                    className={`px-2 py-0.5 ${
+                      line.type === 'add' 
+                        ? 'bg-green-900/40 text-green-300' 
+                        : line.type === 'remove' 
+                        ? 'bg-red-900/40 text-red-300' 
+                        : 'text-gray-300'
+                    }`}
+                  >
+                    <span className="select-none mr-2 text-gray-500">
+                      {line.type === 'add' ? '+' : line.type === 'remove' ? '-' : ' '}
+                    </span>
+                    {line.text || ' '}
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-4 flex justify-between items-center text-sm text-gray-500">
+                <div className="flex gap-4">
+                  <span className="flex items-center gap-1">
+                    <span className="w-3 h-3 bg-green-500 rounded"></span>
+                    Additions
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <span className="w-3 h-3 bg-red-500 rounded"></span>
+                    Deletions
+                  </span>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    setCurrentContent(compareVersions.newer.content);
+                    setShowCompareDialog(false);
+                    setSelectedVersions([]);
+                    toast({
+                      title: "Version Loaded",
+                      description: `Loaded v${compareVersions.newer.version} content into editor`,
+                    });
+                  }}
+                >
+                  Load Newer Version
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

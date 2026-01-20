@@ -184,7 +184,7 @@ export default function ProjectDetail() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {prompts.map((prompt) => (
+                    {[...prompts].sort((a, b) => a.slug.localeCompare(b.slug)).map((prompt) => (
                       <tr key={prompt.id} className="hover:bg-gray-50 cursor-pointer">
                         <td className="px-6 py-4">
                           <div>

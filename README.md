@@ -8,11 +8,7 @@ The easiest way to use prompts with elegant syntax:
 
 ### Installation
 ```bash
-# Install from GitHub subdirectory
-pip install git+https://github.com/ZachLaik/promptvault.git#subdirectory=python-sdk
-
-# Or install locally if you cloned the repo
-cd python-sdk && pip install .
+pip install git+https://github.com/ZachLaik/promptvault.git
 ```
 
 ### Usage

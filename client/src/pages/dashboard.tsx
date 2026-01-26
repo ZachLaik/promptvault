@@ -181,8 +181,8 @@ export default function Dashboard() {
             <div className="px-6 py-4 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-gray-900">Recent Projects</h2>
-                <Link href="/projects">
-                  <a className="text-primary hover:text-primary/80 text-sm font-medium">View all</a>
+                <Link href="/projects" className="text-primary hover:text-primary/80 text-sm font-medium">
+                  View all
                 </Link>
               </div>
             </div>
@@ -237,10 +237,8 @@ export default function Dashboard() {
                           {formatTimeAgo(project.createdAt)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <Link href={`/projects/${project.id}`}>
-                            <Button variant="link" className="text-primary hover:text-primary/80 mr-3 p-0 h-auto text-center font-bold">
-                              Open
-                            </Button>
+                          <Link href={`/projects/${project.id}`} className="text-primary hover:text-primary/80 mr-3 font-bold">
+                            Open
                           </Link>
                           <Button variant="ghost" size="sm" className="text-gray-400 hover:text-gray-600">
                             <MoreHorizontal className="h-4 w-4" />

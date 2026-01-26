@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import { useForm } from "react-hook-form";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import {
   Save,
   GitCompare,
   X,
+  Wand2,
 } from "lucide-react";
 
 interface PromptVersionWithAuthor extends PromptVersion {
@@ -80,6 +81,7 @@ function computeDiff(oldText: string, newText: string): { type: 'same' | 'add' |
 
 export default function PromptEditor() {
   const { projectId, promptSlug } = useParams();
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -215,12 +217,12 @@ export default function PromptEditor() {
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <nav className="flex items-center space-x-2 text-sm text-gray-500 mr-4">
-                <Link href="/projects">
-                  <a className="hover:text-gray-700">Projects</a>
+                <Link href="/projects" className="hover:text-gray-700">
+                  Projects
                 </Link>
                 <ChevronRight className="h-4 w-4" />
-                <Link href={`/projects/${projectId}`}>
-                  <a className="hover:text-gray-700">{project.name}</a>
+                <Link href={`/projects/${projectId}`} className="hover:text-gray-700">
+                  {project.name}
                 </Link>
                 <ChevronRight className="h-4 w-4" />
                 <span className="text-gray-900 font-medium">{promptSlug}</span>
@@ -236,11 +238,20 @@ export default function PromptEditor() {
                 <History className="h-4 w-4 mr-2" />
                 History
               </Button>
+              <Button
+                variant="outline"
+                className="text-purple-600 hover:text-purple-900 hover:bg-purple-50 border-purple-200"
+                disabled={!currentContent.trim()}
+                onClick={() => setLocation(`/projects/${projectId}/prompts/${promptSlug}/optimize`)}
+              >
+                <Wand2 className="h-4 w-4 mr-2" />
+                Optimize
+              </Button>
               <Button variant="outline" className="text-gray-600 hover:text-gray-900">
                 <Play className="h-4 w-4 mr-2" />
                 Test
               </Button>
-              <Button 
+              <Button
                 onClick={handleSave}
                 disabled={saveVersionMutation.isPending}
               >

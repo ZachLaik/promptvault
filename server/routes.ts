@@ -8,6 +8,7 @@ import passport from "passport";
 import { storage } from "./storage";
 import { GitHubSyncService } from "./github-sync";
 import { authenticateSession, authenticateApiKey, authenticateEither, checkProjectAccess, type AuthenticatedRequest } from "./middleware/auth";
+import { optimizePrompt } from "./prompt-optimizer";
 import {
   loginSchema,
   signupSchema,
@@ -16,7 +17,35 @@ import {
   insertPromptSchema,
   insertPromptVersionSchema,
   insertApiKeySchema,
+  optimizationSettingsSchema,
+  qaExampleSchema,
 } from "@shared/schema";
+import { z } from "zod";
+
+// Retry utility for transient database errors (e.g., DNS resolution failures)
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  initialDelay: number = 1000
+): Promise<T> {
+  let lastError: Error | undefined;
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error: any) {
+      lastError = error;
+      // Only retry on transient network errors
+      if (error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET') {
+        const delay = initialDelay * Math.pow(2, i);
+        console.log(`Database operation failed with ${error.code}, retrying in ${delay}ms (attempt ${i + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        throw error;
+      }
+    }
+  }
+  throw lastError;
+}
 
 /**
  * @swagger
@@ -990,6 +1019,623 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(versions);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch prompt versions" });
+    }
+  });
+
+  // Prompt optimization endpoint
+  /**
+   * @swagger
+   * /api/prompts/{slug}/optimize:
+   *   post:
+   *     summary: Optimize a prompt using DSPy-style optimization
+   *     tags: [Prompts]
+   *     security:
+   *       - sessionAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: slug
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Prompt slug identifier
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - projectSlug
+   *               - content
+   *               - qaExamples
+   *               - settings
+   *               - openrouterKey
+   *             properties:
+   *               projectSlug:
+   *                 type: string
+   *               content:
+   *                 type: string
+   *               qaExamples:
+   *                 type: array
+   *                 items:
+   *                   type: object
+   *                   properties:
+   *                     question:
+   *                       type: string
+   *                     answer:
+   *                       type: string
+   *               settings:
+   *                 type: object
+   *               openrouterKey:
+   *                 type: string
+   *     responses:
+   *       200:
+   *         description: Optimization completed successfully
+   *       400:
+   *         description: Invalid input
+   *       401:
+   *         description: Authentication required
+   *       403:
+   *         description: Access denied
+   */
+  app.post("/api/prompts/:slug/optimize", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { slug } = req.params;
+      const { projectSlug, content, qaExamples, settings, openrouterKey } = req.body;
+
+      // Validate inputs
+      if (!projectSlug) {
+        return res.status(400).json({ message: "Project slug required" });
+      }
+
+      if (!content || typeof content !== "string") {
+        return res.status(400).json({ message: "Prompt content required" });
+      }
+
+      if (!openrouterKey || typeof openrouterKey !== "string") {
+        return res.status(400).json({ message: "OpenRouter API key required" });
+      }
+
+      // Validate QA examples
+      const qaSchema = z.array(qaExampleSchema).min(3);
+      const validatedExamples = qaSchema.safeParse(qaExamples);
+      if (!validatedExamples.success) {
+        return res.status(400).json({
+          message: "At least 3 valid Q&A examples required",
+          details: validatedExamples.error.errors,
+        });
+      }
+
+      // Validate settings
+      const validatedSettings = optimizationSettingsSchema.safeParse(settings);
+      if (!validatedSettings.success) {
+        return res.status(400).json({
+          message: "Invalid optimization settings",
+          details: validatedSettings.error.errors,
+        });
+      }
+
+      // Check project access
+      const project = await storage.getProjectBySlug(projectSlug);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const member = await storage.getProjectMember(project.id, req.user!.id);
+      if (!member || (member.role !== "editor" && member.role !== "admin")) {
+        return res.status(403).json({ message: "Requires editor role or higher" });
+      }
+
+      // Get prompt (optional - for recording optimization history)
+      const prompt = await storage.getPromptBySlug(project.id, slug);
+
+      // Create optimization record
+      const optimizationRecord = await storage.createPromptOptimization({
+        promptId: prompt?.id || 0,
+        originalContent: content,
+        qaExamples: JSON.stringify(validatedExamples.data),
+        settings: JSON.stringify(validatedSettings.data),
+        status: "running",
+        authorId: req.user!.id,
+      });
+
+      try {
+        // Run optimization
+        const result = await optimizePrompt(
+          openrouterKey,
+          content,
+          validatedExamples.data,
+          validatedSettings.data
+        );
+
+        // Update optimization record with results
+        await storage.updatePromptOptimization(optimizationRecord.id, {
+          status: "completed",
+          optimizedContent: result.optimizedContent,
+          baselineScore: result.baselineScore.toString(),
+          optimizedScore: result.optimizedScore.toString(),
+          iterations: JSON.stringify(result.iterations),
+          completedAt: new Date(),
+        });
+
+        res.json({
+          optimizationId: optimizationRecord.id,
+          optimizedContent: result.optimizedContent,
+          baselineScore: result.baselineScore,
+          optimizedScore: result.optimizedScore,
+          iterations: result.iterations,
+          judgeRemarks: result.judgeRemarks,
+        });
+      } catch (optimizationError: any) {
+        // Update record with error
+        await storage.updatePromptOptimization(optimizationRecord.id, {
+          status: "failed",
+          errorMessage: optimizationError.message,
+          completedAt: new Date(),
+        });
+
+        throw optimizationError;
+      }
+    } catch (error: any) {
+      console.error("Optimization error:", error);
+      res.status(500).json({
+        message: "Optimization failed",
+        error: error.message || "Unknown error",
+      });
+    }
+  });
+
+  // Get optimization history for a prompt
+  app.get("/api/prompts/:slug/optimizations", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { slug } = req.params;
+      const { projectSlug } = req.query;
+
+      if (!projectSlug) {
+        return res.status(400).json({ message: "Project slug required" });
+      }
+
+      const project = await storage.getProjectBySlug(projectSlug as string);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const member = await storage.getProjectMember(project.id, req.user!.id);
+      if (!member) {
+        return res.status(403).json({ message: "Access denied to this project" });
+      }
+
+      const prompt = await storage.getPromptBySlug(project.id, slug);
+      if (!prompt) {
+        return res.status(404).json({ message: "Prompt not found" });
+      }
+
+      const optimizations = await storage.getPromptOptimizations(prompt.id);
+      res.json(optimizations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch optimization history" });
+    }
+  });
+
+  // ==================== OpenRouter API Keys ====================
+
+  // Get user's stored OpenRouter keys
+  app.get("/api/openrouter-keys", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const keys = await storage.getUserOpenRouterKeys(req.user!.id);
+      // Don't send encrypted keys to client, only metadata
+      res.json(keys.map(k => ({
+        id: k.id,
+        name: k.name,
+        keyPrefix: k.keyPrefix,
+        isDefault: k.isDefault,
+        createdAt: k.createdAt,
+      })));
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch OpenRouter keys" });
+    }
+  });
+
+  // Add a new OpenRouter key
+  app.post("/api/openrouter-keys", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { name, apiKey } = req.body;
+
+      if (!name || !apiKey) {
+        return res.status(400).json({ message: "Name and API key are required" });
+      }
+
+      if (!apiKey.startsWith("sk-or-")) {
+        return res.status(400).json({ message: "Invalid OpenRouter API key format" });
+      }
+
+      // Simple encryption using session secret (in production, use proper encryption)
+      const encryptionKey = process.env.SESSION_SECRET || "dev-secret";
+      const cipher = crypto.createCipheriv(
+        "aes-256-cbc",
+        crypto.scryptSync(encryptionKey, "salt", 32),
+        Buffer.alloc(16, 0)
+      );
+      let encryptedKey = cipher.update(apiKey, "utf8", "hex");
+      encryptedKey += cipher.final("hex");
+
+      const keyPrefix = apiKey.substring(0, 12) + "...";
+
+      const existingKeys = await storage.getUserOpenRouterKeys(req.user!.id);
+      const isDefault = existingKeys.length === 0;
+
+      const newKey = await storage.createUserOpenRouterKey({
+        userId: req.user!.id,
+        name,
+        encryptedKey,
+        keyPrefix,
+        isDefault,
+      });
+
+      res.json({
+        id: newKey.id,
+        name: newKey.name,
+        keyPrefix: newKey.keyPrefix,
+        isDefault: newKey.isDefault,
+        createdAt: newKey.createdAt,
+      });
+    } catch (error) {
+      console.error("Error creating OpenRouter key:", error);
+      res.status(500).json({ message: "Failed to save OpenRouter key" });
+    }
+  });
+
+  // Delete an OpenRouter key
+  app.delete("/api/openrouter-keys/:id", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const keyId = parseInt(req.params.id);
+      const key = await storage.getUserOpenRouterKey(keyId);
+
+      if (!key || key.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Key not found" });
+      }
+
+      await storage.deleteUserOpenRouterKey(keyId);
+      res.json({ message: "Key deleted" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete key" });
+    }
+  });
+
+  // Set default OpenRouter key
+  app.post("/api/openrouter-keys/:id/default", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const keyId = parseInt(req.params.id);
+      const key = await storage.getUserOpenRouterKey(keyId);
+
+      if (!key || key.userId !== req.user!.id) {
+        return res.status(404).json({ message: "Key not found" });
+      }
+
+      await storage.setDefaultOpenRouterKey(req.user!.id, keyId);
+      res.json({ message: "Default key updated" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to set default key" });
+    }
+  });
+
+  // Get decrypted key for optimization (internal use only)
+  const getDecryptedOpenRouterKey = async (userId: number, keyId?: number): Promise<string | null> => {
+    let key;
+    if (keyId) {
+      key = await storage.getUserOpenRouterKey(keyId);
+      if (!key || key.userId !== userId) return null;
+    } else {
+      const keys = await storage.getUserOpenRouterKeys(userId);
+      key = keys.find(k => k.isDefault) || keys[0];
+    }
+
+    if (!key) return null;
+
+    const encryptionKey = process.env.SESSION_SECRET || "dev-secret";
+    const decipher = crypto.createDecipheriv(
+      "aes-256-cbc",
+      crypto.scryptSync(encryptionKey, "salt", 32),
+      Buffer.alloc(16, 0)
+    );
+    let decrypted = decipher.update(key.encryptedKey, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+    return decrypted;
+  };
+
+  // ==================== Optimization Datasets ====================
+
+  // Get datasets for a prompt
+  app.get("/api/prompts/:slug/datasets", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { slug } = req.params;
+      const { projectSlug } = req.query;
+
+      if (!projectSlug) {
+        return res.status(400).json({ message: "Project slug required" });
+      }
+
+      const project = await storage.getProjectBySlug(projectSlug as string);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const member = await storage.getProjectMember(project.id, req.user!.id);
+      if (!member) {
+        return res.status(403).json({ message: "Access denied" });
+      }
+
+      const prompt = await storage.getPromptBySlug(project.id, slug);
+      if (!prompt) {
+        return res.status(404).json({ message: "Prompt not found" });
+      }
+
+      const datasets = await storage.getOptimizationDatasets(prompt.id);
+      res.json(datasets.map(d => ({
+        ...d,
+        examples: JSON.parse(d.examples),
+      })));
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch datasets" });
+    }
+  });
+
+  // Create a new dataset
+  app.post("/api/prompts/:slug/datasets", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { slug } = req.params;
+      const { projectSlug, name, description, examples } = req.body;
+
+      if (!projectSlug) {
+        return res.status(400).json({ message: "Project slug required" });
+      }
+
+      const project = await storage.getProjectBySlug(projectSlug as string);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const member = await storage.getProjectMember(project.id, req.user!.id);
+      if (!member || (member.role !== "editor" && member.role !== "admin")) {
+        return res.status(403).json({ message: "Requires editor role" });
+      }
+
+      const prompt = await storage.getPromptBySlug(project.id, slug);
+      if (!prompt) {
+        return res.status(404).json({ message: "Prompt not found" });
+      }
+
+      // Validate examples
+      const qaSchema = z.array(qaExampleSchema);
+      const validatedExamples = qaSchema.safeParse(examples);
+      if (!validatedExamples.success) {
+        return res.status(400).json({ message: "Invalid examples format" });
+      }
+
+      const dataset = await storage.createOptimizationDataset({
+        promptId: prompt.id,
+        name: name || "Untitled Dataset",
+        description,
+        examples: JSON.stringify(validatedExamples.data),
+      });
+
+      res.json({
+        ...dataset,
+        examples: validatedExamples.data,
+      });
+    } catch (error) {
+      console.error("Error creating dataset:", error);
+      res.status(500).json({ message: "Failed to create dataset" });
+    }
+  });
+
+  // Update a dataset
+  app.put("/api/datasets/:id", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const datasetId = parseInt(req.params.id);
+      const { name, description, examples, projectSlug } = req.body;
+
+      if (!projectSlug) {
+        return res.status(400).json({ message: "Project slug required" });
+      }
+
+      const dataset = await storage.getOptimizationDataset(datasetId);
+      if (!dataset) {
+        return res.status(404).json({ message: "Dataset not found" });
+      }
+
+      // Check access via the prompt's project
+      const prompt = await storage.getPrompt(dataset.promptId);
+      if (!prompt) {
+        return res.status(404).json({ message: "Prompt not found" });
+      }
+
+      const project = await storage.getProject(prompt.projectId);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const member = await storage.getProjectMember(project.id, req.user!.id);
+      if (!member || (member.role !== "editor" && member.role !== "admin")) {
+        return res.status(403).json({ message: "Requires editor role" });
+      }
+
+      const updates: any = {};
+      if (name !== undefined) updates.name = name;
+      if (description !== undefined) updates.description = description;
+      if (examples !== undefined) {
+        const qaSchema = z.array(qaExampleSchema);
+        const validatedExamples = qaSchema.safeParse(examples);
+        if (!validatedExamples.success) {
+          return res.status(400).json({ message: "Invalid examples format" });
+        }
+        updates.examples = JSON.stringify(validatedExamples.data);
+      }
+
+      const updated = await storage.updateOptimizationDataset(datasetId, updates);
+      res.json({
+        ...updated,
+        examples: JSON.parse(updated!.examples),
+      });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update dataset" });
+    }
+  });
+
+  // Delete a dataset
+  app.delete("/api/datasets/:id", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const datasetId = parseInt(req.params.id);
+      const { projectSlug } = req.query;
+
+      if (!projectSlug) {
+        return res.status(400).json({ message: "Project slug required" });
+      }
+
+      const dataset = await storage.getOptimizationDataset(datasetId);
+      if (!dataset) {
+        return res.status(404).json({ message: "Dataset not found" });
+      }
+
+      const prompt = await storage.getPrompt(dataset.promptId);
+      if (!prompt) {
+        return res.status(404).json({ message: "Prompt not found" });
+      }
+
+      const project = await storage.getProject(prompt.projectId);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const member = await storage.getProjectMember(project.id, req.user!.id);
+      if (!member || (member.role !== "editor" && member.role !== "admin")) {
+        return res.status(403).json({ message: "Requires editor role" });
+      }
+
+      await storage.deleteOptimizationDataset(datasetId);
+      res.json({ message: "Dataset deleted" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete dataset" });
+    }
+  });
+
+  // Run optimization using stored key
+  app.post("/api/prompts/:slug/optimize-with-key", authenticateSession, async (req: AuthenticatedRequest, res) => {
+    try {
+      const { slug } = req.params;
+      const { projectSlug, content, datasetId, settings, keyId } = req.body;
+
+      if (!projectSlug) {
+        return res.status(400).json({ message: "Project slug required" });
+      }
+
+      if (!content || typeof content !== "string") {
+        return res.status(400).json({ message: "Prompt content required" });
+      }
+
+      // Get the OpenRouter key
+      const apiKey = await getDecryptedOpenRouterKey(req.user!.id, keyId);
+      if (!apiKey) {
+        return res.status(400).json({ message: "No OpenRouter API key configured. Please add one in settings." });
+      }
+
+      // Validate settings
+      const validatedSettings = optimizationSettingsSchema.safeParse(settings);
+      if (!validatedSettings.success) {
+        return res.status(400).json({
+          message: "Invalid optimization settings",
+          details: validatedSettings.error.errors,
+        });
+      }
+
+      // Check project access
+      const project = await storage.getProjectBySlug(projectSlug);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+
+      const member = await storage.getProjectMember(project.id, req.user!.id);
+      if (!member || (member.role !== "editor" && member.role !== "admin")) {
+        return res.status(403).json({ message: "Requires editor role or higher" });
+      }
+
+      const prompt = await storage.getPromptBySlug(project.id, slug);
+      if (!prompt) {
+        return res.status(404).json({ message: "Prompt not found" });
+      }
+
+      // Get Q&A examples from dataset
+      let qaExamples;
+      if (datasetId) {
+        const dataset = await storage.getOptimizationDataset(datasetId);
+        if (!dataset || dataset.promptId !== prompt.id) {
+          return res.status(404).json({ message: "Dataset not found" });
+        }
+        qaExamples = JSON.parse(dataset.examples);
+      } else {
+        return res.status(400).json({ message: "Dataset ID required" });
+      }
+
+      if (qaExamples.length < 3) {
+        return res.status(400).json({ message: "At least 3 Q&A examples required" });
+      }
+
+      // Create optimization record
+      const optimizationRecord = await storage.createPromptOptimization({
+        promptId: prompt.id,
+        originalContent: content,
+        qaExamples: JSON.stringify(qaExamples),
+        settings: JSON.stringify(validatedSettings.data),
+        status: "running",
+        authorId: req.user!.id,
+      });
+
+      try {
+        // Run optimization
+        const result = await optimizePrompt(
+          apiKey,
+          content,
+          qaExamples,
+          validatedSettings.data
+        );
+
+        // Update optimization record with results (with retry for transient network errors)
+        await retryWithBackoff(() => storage.updatePromptOptimization(optimizationRecord.id, {
+          status: "completed",
+          optimizedContent: result.optimizedContent,
+          baselineScore: result.baselineScore.toString(),
+          optimizedScore: result.optimizedScore.toString(),
+          iterations: JSON.stringify(result.iterations),
+          completedAt: new Date(),
+        }));
+
+        res.json({
+          optimizationId: optimizationRecord.id,
+          optimizedContent: result.optimizedContent,
+          baselineScore: result.baselineScore,
+          optimizedScore: result.optimizedScore,
+          iterations: result.iterations,
+          judgeRemarks: result.judgeRemarks,
+        });
+      } catch (optimizationError: any) {
+        // Try to update the failure status with retry
+        try {
+          await retryWithBackoff(() => storage.updatePromptOptimization(optimizationRecord.id, {
+            status: "failed",
+            errorMessage: optimizationError.message,
+            completedAt: new Date(),
+          }));
+        } catch (dbError) {
+          console.error("Failed to update optimization status:", dbError);
+        }
+        throw optimizationError;
+      }
+    } catch (error: any) {
+      console.error("Optimization error:", error);
+      res.status(500).json({
+        message: "Optimization failed",
+        error: error.message || "Unknown error",
+      });
     }
   });
 

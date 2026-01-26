@@ -12,6 +12,8 @@ import ProjectsPage from "@/pages/projects";
 import ProjectDetail from "./pages/project-detail";
 import PromptEditor from "./pages/prompt-editor";
 import PromptNew from "./pages/prompt-new";
+import PromptOptimize from "./pages/prompt-optimize";
+import OptimizeHub from "./pages/optimize-hub";
 import DocsPage from "./pages/docs";
 import ApiKeysPage from "@/pages/api-keys";
 import TeamPage from "@/pages/team";
@@ -47,6 +49,7 @@ function Router() {
       '/dashboard': 'Dashboard - PromptVault',
       '/projects': 'Projects - PromptVault',
       '/api-keys': 'API Keys - PromptVault',
+      '/optimize': 'Optimize - PromptVault',
       '/team': 'Team - PromptVault',
       '/docs': 'Documentation - PromptVault',
       '/account-settings': 'Account Settings - PromptVault',
@@ -90,6 +93,16 @@ function Router() {
       <Route path="/projects/:projectId/prompts/:promptSlug/edit">
         <ProtectedRoute>
           <PromptEditor />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/projects/:projectId/prompts/:promptSlug/optimize">
+        <ProtectedRoute>
+          <PromptOptimize />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/optimize">
+        <ProtectedRoute>
+          <OptimizeHub />
         </ProtectedRoute>
       </Route>
       <Route path="/api-keys">

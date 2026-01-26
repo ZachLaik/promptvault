@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { getInitials } from "@/lib/auth";
-import { 
+import {
   Home,
   Folder,
   Key,
@@ -10,7 +10,8 @@ import {
   Settings,
   Code,
   Book,
-  LogOut
+  LogOut,
+  Sparkles
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -27,6 +28,7 @@ export function Sidebar() {
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "Projects", href: "/projects", icon: Folder },
+    { name: "Optimize", href: "/optimize", icon: Sparkles },
     { name: "API Keys", href: "/api-keys", icon: Key },
     { name: "Team", href: "/team", icon: Users },
     { name: "Docs", href: "/docs", icon: Book },

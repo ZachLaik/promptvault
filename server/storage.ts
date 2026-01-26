@@ -8,6 +8,9 @@ import {
   prompts,
   promptVersions,
   apiKeys,
+  promptOptimizations,
+  userOpenRouterKeys,
+  optimizationDatasets,
   type User,
   type InsertUser,
   type Project,
@@ -20,6 +23,12 @@ import {
   type InsertPromptVersion,
   type ApiKey,
   type InsertApiKey,
+  type PromptOptimization,
+  type InsertPromptOptimization,
+  type UserOpenRouterKey,
+  type InsertUserOpenRouterKey,
+  type OptimizationDataset,
+  type InsertOptimizationDataset,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -65,6 +74,26 @@ export interface IStorage {
   createApiKey(apiKey: InsertApiKey): Promise<ApiKey>;
   updateApiKey(id: number, updates: Partial<ApiKey>): Promise<ApiKey | undefined>;
   deleteApiKey(id: number): Promise<void>;
+
+  // Prompt Optimizations
+  getPromptOptimization(id: number): Promise<PromptOptimization | undefined>;
+  getPromptOptimizations(promptId: number): Promise<(PromptOptimization & { author: User })[]>;
+  createPromptOptimization(optimization: InsertPromptOptimization): Promise<PromptOptimization>;
+  updatePromptOptimization(id: number, updates: Partial<PromptOptimization>): Promise<PromptOptimization | undefined>;
+
+  // User OpenRouter Keys
+  getUserOpenRouterKeys(userId: number): Promise<UserOpenRouterKey[]>;
+  getUserOpenRouterKey(id: number): Promise<UserOpenRouterKey | undefined>;
+  createUserOpenRouterKey(key: InsertUserOpenRouterKey): Promise<UserOpenRouterKey>;
+  deleteUserOpenRouterKey(id: number): Promise<void>;
+  setDefaultOpenRouterKey(userId: number, keyId: number): Promise<void>;
+
+  // Optimization Datasets
+  getOptimizationDatasets(promptId: number): Promise<OptimizationDataset[]>;
+  getOptimizationDataset(id: number): Promise<OptimizationDataset | undefined>;
+  createOptimizationDataset(dataset: InsertOptimizationDataset): Promise<OptimizationDataset>;
+  updateOptimizationDataset(id: number, updates: Partial<OptimizationDataset>): Promise<OptimizationDataset | undefined>;
+  deleteOptimizationDataset(id: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -323,6 +352,120 @@ export class DatabaseStorage implements IStorage {
 
   async deleteApiKey(id: number): Promise<void> {
     await this.db.delete(apiKeys).where(eq(apiKeys.id, id));
+  }
+
+  // Prompt Optimizations
+  async getPromptOptimization(id: number): Promise<PromptOptimization | undefined> {
+    const result = await this.db.select().from(promptOptimizations).where(eq(promptOptimizations.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getPromptOptimizations(promptId: number): Promise<(PromptOptimization & { author: User })[]> {
+    const result = await this.db
+      .select({
+        id: promptOptimizations.id,
+        promptId: promptOptimizations.promptId,
+        promptVersionId: promptOptimizations.promptVersionId,
+        originalContent: promptOptimizations.originalContent,
+        optimizedContent: promptOptimizations.optimizedContent,
+        qaExamples: promptOptimizations.qaExamples,
+        settings: promptOptimizations.settings,
+        status: promptOptimizations.status,
+        baselineScore: promptOptimizations.baselineScore,
+        optimizedScore: promptOptimizations.optimizedScore,
+        iterations: promptOptimizations.iterations,
+        errorMessage: promptOptimizations.errorMessage,
+        authorId: promptOptimizations.authorId,
+        createdAt: promptOptimizations.createdAt,
+        completedAt: promptOptimizations.completedAt,
+        author: users,
+      })
+      .from(promptOptimizations)
+      .innerJoin(users, eq(users.id, promptOptimizations.authorId))
+      .where(eq(promptOptimizations.promptId, promptId))
+      .orderBy(desc(promptOptimizations.createdAt));
+
+    return result;
+  }
+
+  async createPromptOptimization(optimization: InsertPromptOptimization): Promise<PromptOptimization> {
+    const result = await this.db.insert(promptOptimizations).values(optimization).returning();
+    return result[0];
+  }
+
+  async updatePromptOptimization(id: number, updates: Partial<PromptOptimization>): Promise<PromptOptimization | undefined> {
+    const result = await this.db.update(promptOptimizations).set(updates).where(eq(promptOptimizations.id, id)).returning();
+    return result[0];
+  }
+
+  // User OpenRouter Keys
+  async getUserOpenRouterKeys(userId: number): Promise<UserOpenRouterKey[]> {
+    const result = await this.db
+      .select()
+      .from(userOpenRouterKeys)
+      .where(eq(userOpenRouterKeys.userId, userId))
+      .orderBy(desc(userOpenRouterKeys.createdAt));
+    return result;
+  }
+
+  async getUserOpenRouterKey(id: number): Promise<UserOpenRouterKey | undefined> {
+    const result = await this.db.select().from(userOpenRouterKeys).where(eq(userOpenRouterKeys.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createUserOpenRouterKey(key: InsertUserOpenRouterKey): Promise<UserOpenRouterKey> {
+    const result = await this.db.insert(userOpenRouterKeys).values(key).returning();
+    return result[0];
+  }
+
+  async deleteUserOpenRouterKey(id: number): Promise<void> {
+    await this.db.delete(userOpenRouterKeys).where(eq(userOpenRouterKeys.id, id));
+  }
+
+  async setDefaultOpenRouterKey(userId: number, keyId: number): Promise<void> {
+    // First, unset all defaults for this user
+    await this.db
+      .update(userOpenRouterKeys)
+      .set({ isDefault: false })
+      .where(eq(userOpenRouterKeys.userId, userId));
+    // Then set the specified key as default
+    await this.db
+      .update(userOpenRouterKeys)
+      .set({ isDefault: true })
+      .where(eq(userOpenRouterKeys.id, keyId));
+  }
+
+  // Optimization Datasets
+  async getOptimizationDatasets(promptId: number): Promise<OptimizationDataset[]> {
+    const result = await this.db
+      .select()
+      .from(optimizationDatasets)
+      .where(eq(optimizationDatasets.promptId, promptId))
+      .orderBy(desc(optimizationDatasets.updatedAt));
+    return result;
+  }
+
+  async getOptimizationDataset(id: number): Promise<OptimizationDataset | undefined> {
+    const result = await this.db.select().from(optimizationDatasets).where(eq(optimizationDatasets.id, id)).limit(1);
+    return result[0];
+  }
+
+  async createOptimizationDataset(dataset: InsertOptimizationDataset): Promise<OptimizationDataset> {
+    const result = await this.db.insert(optimizationDatasets).values(dataset).returning();
+    return result[0];
+  }
+
+  async updateOptimizationDataset(id: number, updates: Partial<OptimizationDataset>): Promise<OptimizationDataset | undefined> {
+    const result = await this.db
+      .update(optimizationDatasets)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(optimizationDatasets.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteOptimizationDataset(id: number): Promise<void> {
+    await this.db.delete(optimizationDatasets).where(eq(optimizationDatasets.id, id));
   }
 }
 

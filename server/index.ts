@@ -2,6 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { setupSwagger } from "./swagger";
+import { createMcpRouter } from "./mcp";
 import session from "express-session"; // Ensure express-session is installed: npm install express-session
 import cors from "cors";
 
@@ -68,6 +69,9 @@ app.use((req, res, next) => {
   setupSwagger(app);
 
   const server = await registerRoutes(app);
+
+  // Mount MCP server — API key is in the URL path: /mcp/{apiKey}
+  app.use("/mcp", createMcpRouter());
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

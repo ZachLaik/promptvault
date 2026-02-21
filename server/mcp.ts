@@ -112,20 +112,21 @@ async function getDecryptedOpenRouterKey(userId: number, keyId?: number): Promis
 
 // ─── Tool Registration ──────────────────────────────────────────────────────
 //
-// Tools are organized into 4 groups by naming prefix so models can scan the
-// tool list without being overwhelmed:
+// 18 tools in 4 groups. Descriptions include cross-references so models
+// understand the workflow without external docs.
 //
 //   Projects & Prompts (core CRUD):
 //     list_projects, create_project, list_prompts, get_prompt,
 //     save_prompt, list_prompt_versions, list_api_keys
 //
-//   Optimization (DSPy):
+//   Optimization (DSPy-style prompt improvement):
 //     optimize_prompt, list_optimizations
+//     Workflow: store an OpenRouter key → create a dataset → optimize_prompt
 //
-//   Datasets (Q&A examples for optimization):
+//   Datasets (Q&A examples used by optimize_prompt):
 //     list_datasets, create_dataset, update_dataset, delete_dataset
 //
-//   OpenRouter Keys:
+//   OpenRouter Keys (required for optimize_prompt):
 //     list_openrouter_keys, add_openrouter_key,
 //     delete_openrouter_key, set_default_openrouter_key
 
@@ -393,7 +394,7 @@ function registerTools(server: McpServer, user: McpUser): void {
     {
       title: "Optimize Prompt",
       description:
-        "Run DSPy-style prompt optimization. Provide either an openrouterKey directly or a keyId referencing a stored key. Supply Q&A examples inline or via datasetId. Requires editor role. This may take a while.",
+        "Run DSPy-style prompt optimization using OpenRouter LLMs. Evaluates the prompt against Q&A examples, then iteratively rewrites it to maximize score. Returns the optimized prompt text, baseline/optimized scores, and per-iteration details. Requires editor role. Can take 30s–5min depending on iterations.\n\nAPI key: pass openrouterKey directly, or omit to use the default stored key (see add_openrouter_key). Pass keyId to pick a specific stored key.\n\nQ&A examples: pass qaExamples inline (min 3) or pass datasetId referencing a dataset created with create_dataset.",
       inputSchema: {
         slug: z.string().min(1).describe("Prompt slug identifier"),
         projectSlug: z.string().min(1).describe("Project slug"),
@@ -407,39 +408,39 @@ function registerTools(server: McpServer, user: McpUser): void {
           )
           .min(3)
           .optional()
-          .describe("At least 3 Q&A examples (required if no datasetId)"),
+          .describe("At least 3 Q&A examples (required if no datasetId). Each has a question (model input) and answer (expected output)."),
         datasetId: z
           .number()
           .int()
           .positive()
           .optional()
-          .describe("ID of a saved dataset to use instead of inline qaExamples"),
+          .describe("ID of a saved dataset (from create_dataset / list_datasets) to use instead of inline qaExamples"),
         settings: z
           .object({
-            model: z.string().describe("Model name for optimization (e.g. 'openai/gpt-4o')"),
-            judgeModel: z.string().optional().describe("Model to judge quality"),
+            model: z.string().describe("OpenRouter model identifier (e.g. 'openai/gpt-4o', 'anthropic/claude-sonnet-4'). Used to generate and evaluate prompt candidates."),
+            judgeModel: z.string().optional().describe("Separate model for LLM-as-judge evaluation. Defaults to the same model if omitted. Only used when metric is llm_judge or llm_judge_strict."),
             optimizer: z
               .enum(["bootstrap", "bootstrap_random", "mipro", "copro"])
-              .describe("Optimization strategy"),
+              .describe("Strategy: 'bootstrap'/'bootstrap_random' = embed few-shot demos into the prompt; 'copro'/'mipro' = iteratively rewrite the prompt using failure analysis. copro/mipro are generally more effective."),
             metric: z
               .enum(["exact", "contains", "semantic", "combined", "llm_judge", "llm_judge_strict"])
-              .describe("Evaluation metric"),
-            threshold: z.number().min(0).max(1).optional().describe("Score threshold (0-1)"),
-            maxIterations: z.number().min(1).max(10).optional().describe("Max iterations (1-10)"),
-            trials: z.number().min(1).max(50).optional().describe("Number of trials (1-50)"),
-            demos: z.number().min(1).max(10).optional().describe("Number of demos (1-10)"),
+              .describe("How to score each Q&A pair. 'exact' = case-insensitive exact match; 'contains' = substring match; 'semantic' = token-overlap Jaccard; 'combined' = exact→contains→semantic fallback; 'llm_judge' = LLM scores 0-1 on correctness/completeness; 'llm_judge_strict' = LLM binary correct/incorrect."),
+            threshold: z.number().min(0).max(1).optional().describe("Stop early when average score reaches this threshold. Default 0.95."),
+            maxIterations: z.number().min(1).max(10).optional().describe("Max optimization iterations. Default 3. Each iteration generates and evaluates a new prompt candidate."),
+            trials: z.number().min(1).max(50).optional().describe("Number of trials per iteration (currently unused, reserved for future batch evaluation)"),
+            demos: z.number().min(1).max(10).optional().describe("Number of few-shot demo examples to embed (only for bootstrap/bootstrap_random optimizer). Default 4."),
           })
-          .describe("Optimization settings"),
+          .describe("Optimization settings — model, strategy, and evaluation configuration"),
         openrouterKey: z
           .string()
           .optional()
-          .describe("OpenRouter API key (sk-or-...). Omit to use a stored key."),
+          .describe("OpenRouter API key (sk-or-...) passed directly. If omitted, uses the default stored key (see add_openrouter_key / list_openrouter_keys)."),
         keyId: z
           .number()
           .int()
           .positive()
           .optional()
-          .describe("ID of a stored OpenRouter key to use"),
+          .describe("ID of a specific stored OpenRouter key to use (from list_openrouter_keys). Ignored if openrouterKey is provided."),
       },
     },
     async ({ slug, projectSlug, content, qaExamples, datasetId, settings, openrouterKey, keyId }) => {
@@ -521,7 +522,7 @@ function registerTools(server: McpServer, user: McpUser): void {
     "list_optimizations",
     {
       title: "List Optimizations",
-      description: "Get optimization history for a prompt, ordered newest first.",
+      description: "Get optimization run history for a prompt (newest first). Each entry includes status (pending/running/completed/failed), original and optimized prompt text, baseline and optimized scores, settings used, and per-iteration details.",
       inputSchema: {
         slug: z.string().min(1).describe("Prompt slug identifier"),
         projectSlug: z.string().min(1).describe("Project slug"),
@@ -556,7 +557,7 @@ function registerTools(server: McpServer, user: McpUser): void {
     "list_datasets",
     {
       title: "List Datasets",
-      description: "List Q&A datasets saved for a prompt's optimization.",
+      description: "List Q&A datasets saved for a prompt. Datasets contain question/answer pairs used as evaluation examples by optimize_prompt (pass the dataset's id as datasetId).",
       inputSchema: {
         slug: z.string().min(1).describe("Prompt slug identifier"),
         projectSlug: z.string().min(1).describe("Project slug"),
@@ -585,7 +586,7 @@ function registerTools(server: McpServer, user: McpUser): void {
     {
       title: "Create Dataset",
       description:
-        "Create a Q&A dataset for prompt optimization. Requires editor role or higher.",
+        "Create a reusable Q&A dataset for a prompt. The returned id can be passed as datasetId to optimize_prompt instead of providing inline qaExamples. Requires editor role.",
       inputSchema: {
         slug: z.string().min(1).describe("Prompt slug identifier"),
         projectSlug: z.string().min(1).describe("Project slug"),
@@ -632,7 +633,7 @@ function registerTools(server: McpServer, user: McpUser): void {
     {
       title: "Update Dataset",
       description:
-        "Update a Q&A dataset's name, description, or examples. Requires editor role.",
+        "Update a Q&A dataset's name, description, or examples. Providing examples replaces all existing ones. Requires editor role.",
       inputSchema: {
         datasetId: z.number().int().positive().describe("Dataset ID"),
         name: z.string().min(1).optional().describe("New dataset name"),
@@ -718,7 +719,7 @@ function registerTools(server: McpServer, user: McpUser): void {
     "list_openrouter_keys",
     {
       title: "List OpenRouter Keys",
-      description: "List stored OpenRouter API keys (metadata only, keys are never exposed).",
+      description: "List stored OpenRouter API keys (metadata only, actual keys are never exposed). These keys are used by optimize_prompt — pass a key's id as keyId, or omit to use the default.",
       inputSchema: {},
     },
     async () => {
@@ -740,7 +741,7 @@ function registerTools(server: McpServer, user: McpUser): void {
     {
       title: "Add OpenRouter Key",
       description:
-        "Store an OpenRouter API key (encrypted). First key added becomes the default.",
+        "Store an OpenRouter API key (encrypted at rest). Required for optimize_prompt when not passing openrouterKey inline. The first key added automatically becomes the default.",
       inputSchema: {
         name: z.string().min(1).describe("Display name for this key"),
         apiKey: z
@@ -809,7 +810,7 @@ function registerTools(server: McpServer, user: McpUser): void {
     "set_default_openrouter_key",
     {
       title: "Set Default OpenRouter Key",
-      description: "Set which stored OpenRouter key is used by default for optimizations.",
+      description: "Set which stored OpenRouter key is used when optimize_prompt is called without an explicit openrouterKey or keyId.",
       inputSchema: {
         keyId: z.number().int().positive().describe("OpenRouter key ID to make default"),
       },

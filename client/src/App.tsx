@@ -19,6 +19,7 @@ import ApiKeysPage from "@/pages/api-keys";
 import TeamPage from "@/pages/team";
 import NotFound from "@/pages/not-found";
 import AccountSettings from "@/pages/account-settings";
+import McpAccessPage from "@/pages/mcp-access";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
@@ -49,6 +50,7 @@ function Router() {
       '/dashboard': 'Dashboard - PromptVault',
       '/projects': 'Projects - PromptVault',
       '/api-keys': 'API Keys - PromptVault',
+      '/mcp-access': 'MCP Access - PromptVault',
       '/optimize': 'Optimize - PromptVault',
       '/team': 'Team - PromptVault',
       '/docs': 'Documentation - PromptVault',
@@ -118,6 +120,11 @@ function Router() {
       <Route path="/account-settings">
         <ProtectedRoute>
           <AccountSettings />
+        </ProtectedRoute>
+      </Route>
+      <Route path="/mcp-access">
+        <ProtectedRoute>
+          <McpAccessPage />
         </ProtectedRoute>
       </Route>
       <Route path="/projects/:projectId/prompts/new">

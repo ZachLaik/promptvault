@@ -11,7 +11,8 @@ import {
   Code,
   Book,
   LogOut,
-  Sparkles
+  Sparkles,
+  Plug,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -30,6 +31,7 @@ export function Sidebar() {
     { name: "Projects", href: "/projects", icon: Folder },
     { name: "Optimize", href: "/optimize", icon: Sparkles },
     { name: "API Keys", href: "/api-keys", icon: Key },
+    { name: "MCP Access", href: "/mcp-access", icon: Plug },
     { name: "Team", href: "/team", icon: Users },
     { name: "Docs", href: "/docs", icon: Book },
   ];
@@ -59,11 +61,10 @@ export function Sidebar() {
             return (
               <Link key={item.name} href={item.href}>
                 <div
-                  className={`flex items-center px-3 py-2 rounded-lg font-medium transition-colors ${
-                    isActive(item.href)
+                  className={`flex items-center px-3 py-2 rounded-lg font-medium transition-colors ${isActive(item.href)
                       ? "bg-primary/10 text-primary"
                       : "text-gray-700 hover:bg-gray-50"
-                  }`}
+                    }`}
                 >
                   <Icon className="h-5 w-5 mr-3" />
                   {item.name}

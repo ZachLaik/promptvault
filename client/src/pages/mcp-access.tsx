@@ -1,11 +1,17 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Copy,
   Plug,
@@ -15,6 +21,8 @@ import {
   Key,
   Sparkles,
   Info,
+  TriangleAlert,
+  Plus,
 } from "lucide-react";
 
 interface ApiKeyWithMasked {
@@ -34,36 +42,85 @@ const BASE_URL =
 
 export default function McpAccessPage() {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [selectedKeyId, setSelectedKeyId] = useState<number | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [newlyCreatedKey, setNewlyCreatedKey] = useState<ApiKeyWithMasked | null>(null);
 
   const { data: apiKeys = [], isLoading } = useQuery<ApiKeyWithMasked[]>({
     queryKey: ["/api/api-keys"],
   });
 
   const activeKeys = apiKeys.filter((k) => k.isActive);
-  const selectedKey = activeKeys.find((k) => k.id === selectedKeyId) ?? activeKeys[0] ?? null;
-  const mcpUrl = selectedKey
-    ? `${BASE_URL}/mcp/${selectedKey.maskedKey}`
+
+  // If we just created a key, select it automatically. Otherwise default to nothing or first
+  const selectedKey = newlyCreatedKey
+    ? newlyCreatedKey
+    : (activeKeys.find((k) => k.id === selectedKeyId) ?? activeKeys[0] ?? null);
+
+  // The actual URL we build uses the real key if we just generated it, otherwise the masked key
+  const keyToDisplay = newlyCreatedKey && selectedKey?.id === newlyCreatedKey.id
+    ? newlyCreatedKey.keyValue
+    : selectedKey?.maskedKey;
+
+  const mcpUrl = keyToDisplay
+    ? `${BASE_URL}/mcp/${keyToDisplay}`
     : `${BASE_URL}/mcp/<your-api-key>`;
+
+  const createApiKeyMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const response = await apiRequest("POST", "/api/api-keys", data);
+      return response.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/api-keys"] });
+      setIsCreateDialogOpen(false);
+      setNewlyCreatedKey(data);
+      setSelectedKeyId(data.id);
+      form.reset();
+      toast({
+        title: "Success",
+        description: "API key created successfully",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to create API key",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const form = useForm({
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
+
+  const onSubmit = (data: any) => {
+    createApiKeyMutation.mutate(data);
+  };
 
   const copy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: "Copied", description: `${label} copied to clipboard` });
   };
 
-  const claudeConfig = selectedKey
+  const claudeConfig = keyToDisplay
     ? JSON.stringify(
-        {
-          mcpServers: {
-            promptvault: {
-              type: "http",
-              url: `${BASE_URL}/mcp/${selectedKey.maskedKey}`,
-            },
+      {
+        mcpServers: {
+          promptvault: {
+            type: "http",
+            url: `${BASE_URL}/mcp/${keyToDisplay}`,
           },
         },
-        null,
-        2
-      )
+      },
+      null,
+      2
+    )
     : `{
   "mcpServers": {
     "promptvault": {
@@ -73,21 +130,21 @@ export default function McpAccessPage() {
   }
 }`;
 
-  const cursorConfig = selectedKey
+  const cursorConfig = keyToDisplay
     ? JSON.stringify(
-        {
-          mcp: {
-            servers: {
-              promptvault: {
-                url: `${BASE_URL}/mcp/${selectedKey.maskedKey}`,
-                transport: "http",
-              },
+      {
+        mcp: {
+          servers: {
+            promptvault: {
+              url: `${BASE_URL}/mcp/${keyToDisplay}`,
+              transport: "http",
             },
           },
         },
-        null,
-        2
-      )
+      },
+      null,
+      2
+    )
     : `{
   "mcp": {
     "servers": {
@@ -209,26 +266,64 @@ export default function McpAccessPage() {
                 </div>
               ) : (
                 <>
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">
-                      Select the API key to use:
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm text-gray-600">
+                      Select an API key to configure your client:
                     </p>
-                    <div className="flex flex-wrap gap-2">
-                      {activeKeys.map((k) => (
-                        <button
-                          key={k.id}
-                          onClick={() => setSelectedKeyId(k.id)}
-                          className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${
-                            (selectedKey?.id === k.id)
-                              ? "bg-indigo-600 text-white border-indigo-600"
-                              : "bg-white text-gray-700 border-gray-300 hover:border-indigo-400"
-                          }`}
-                        >
-                          {k.name}
-                        </button>
-                      ))}
-                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsCreateDialogOpen(true)}
+                      className="text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Generate New Key
+                    </Button>
                   </div>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {activeKeys.map((k) => (
+                      <button
+                        key={k.id}
+                        onClick={() => {
+                          setSelectedKeyId(k.id);
+                          if (newlyCreatedKey?.id !== k.id) {
+                            setNewlyCreatedKey(null);
+                          }
+                        }}
+                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors ${(selectedKey?.id === k.id)
+                            ? "bg-indigo-600 text-white border-indigo-600"
+                            : "bg-white text-gray-700 border-gray-300 hover:border-indigo-400"
+                          }`}
+                      >
+                        {k.name}
+                      </button>
+                    ))}
+                  </div>
+
+                  {selectedKey && (!newlyCreatedKey || newlyCreatedKey.id !== selectedKey.id) && (
+                    <div className="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                      <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-blue-800">
+                        <p className="font-medium pr-2">For your security, existing API keys are heavily masked (e.g., <code>pk_...</code>).</p>
+                        <p className="mt-1">
+                          The URL below shows the masked version. To connect your MCP client, you must replace the masked key with your actual, unmasked API key value.
+                          If you don't have it saved, please generate a new key using the button above.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {newlyCreatedKey && newlyCreatedKey.id === selectedKey?.id && (
+                    <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-green-800">
+                        <p className="font-medium">Success! New key generated.</p>
+                        <p className="mt-1">
+                          The full, unmasked API key is currently shown in the URL below. It will never be shown again, so copy your MCP configuration now.
+                        </p>
+                      </div>
+                    </div>
+                  )}
 
                   <div>
                     <p className="text-xs text-gray-500 mb-1 font-medium uppercase tracking-wide">
@@ -360,6 +455,67 @@ export default function McpAccessPage() {
 
         </div>
       </main>
+
+      {/* Create API Key Dialog */}
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Generate New API Key for MCP</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+              <Label htmlFor="name">Key Name</Label>
+              <Input
+                id="name"
+                placeholder="e.g., Cursor MCP Key"
+                {...form.register("name", { required: "Name is required" })}
+                className="mt-1"
+              />
+              {form.formState.errors.name && (
+                <p className="text-sm text-red-600 mt-1">
+                  {form.formState.errors.name?.message as string}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Optional description"
+                {...form.register("description")}
+                className="mt-1"
+              />
+            </div>
+
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+              <div className="flex items-start">
+                <TriangleAlert className="h-5 w-5 text-yellow-600 mr-2 mt-0.5" />
+                <div className="text-sm text-yellow-700">
+                  <p className="font-medium">Important!</p>
+                  <p>Your API key will be shown only once. We'll pre-fill the MCP URL below, so make sure to copy the configuration before leaving the page.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end space-x-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsCreateDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={createApiKeyMutation.isPending}
+              >
+                {createApiKeyMutation.isPending ? "Generating..." : "Generate Key"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

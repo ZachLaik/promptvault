@@ -20,6 +20,7 @@ import {
   Copy,
   Trash2,
   TriangleAlert,
+  Plug,
 } from "lucide-react";
 
 interface ApiKeyWithMasked extends Omit<ApiKey, 'keyHash'> {
@@ -109,7 +110,7 @@ export default function ApiKeysPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       <Sidebar />
-      
+
       <main className="ml-64 min-h-screen">
         <Header
           title="API Keys"
@@ -119,7 +120,7 @@ export default function ApiKeysPage() {
             onClick: () => setIsCreateDialogOpen(true),
           }}
         />
-        
+
         <div className="p-6">
           {/* API Documentation */}
           <Card className="bg-blue-50 border-blue-200 mb-6">
@@ -144,13 +145,44 @@ export default function ApiKeysPage() {
               </div>
             </CardContent>
           </Card>
-          
+
+          {/* MCP Access Banner */}
+          <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-200 mb-6">
+            <CardContent className="p-6">
+              <div className="flex items-start">
+                <div className="h-8 w-8 bg-indigo-600 rounded-lg flex items-center justify-center mr-4 mt-0.5 flex-shrink-0">
+                  <Plug className="h-4 w-4 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-indigo-900 mb-1">
+                    Use your API key with MCP
+                  </h3>
+                  <p className="text-sm text-indigo-800 mb-3">
+                    Your API key also works as an MCP (Model Context Protocol) credential.
+                    Connect Claude Desktop, Cursor, or any MCP-compatible agent directly
+                    to your prompt library via:
+                  </p>
+                  <code className="text-xs bg-white border border-indigo-200 text-indigo-900 px-3 py-1.5 rounded font-mono block mb-3">
+                    POST {typeof window !== "undefined" ? window.location.origin : "https://your-domain.com"}/mcp/&#123;your-api-key&#125;
+                  </code>
+                  <a
+                    href="/mcp-access"
+                    className="inline-flex items-center text-sm font-medium text-indigo-700 hover:text-indigo-900 underline"
+                  >
+                    <Plug className="h-3.5 w-3.5 mr-1" />
+                    Go to MCP Access page for setup instructions →
+                  </a>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* API Keys Table */}
           <Card>
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-semibold text-gray-900">Your API Keys</h2>
             </div>
-            
+
             {isLoading ? (
               <div className="p-6">
                 <p className="text-gray-500">Loading API keys...</p>
@@ -249,7 +281,7 @@ export default function ApiKeysPage() {
                 </p>
               )}
             </div>
-            
+
             <div>
               <Label htmlFor="description">Description</Label>
               <Textarea
@@ -264,7 +296,7 @@ export default function ApiKeysPage() {
                 </p>
               )}
             </div>
-            
+
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
               <div className="flex items-start">
                 <TriangleAlert className="h-5 w-5 text-yellow-600 mr-2 mt-0.5" />
@@ -274,7 +306,7 @@ export default function ApiKeysPage() {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex items-center justify-end space-x-3 pt-4">
               <Button
                 type="button"
@@ -310,7 +342,7 @@ export default function ApiKeysPage() {
                 </div>
               </div>
             </div>
-            
+
             {newApiKey && (
               <div>
                 <Label>Your new API key:</Label>
@@ -329,7 +361,7 @@ export default function ApiKeysPage() {
                 </div>
               </div>
             )}
-            
+
             <div className="flex items-center justify-end pt-4">
               <Button onClick={() => setNewApiKey(null)}>
                 Done
